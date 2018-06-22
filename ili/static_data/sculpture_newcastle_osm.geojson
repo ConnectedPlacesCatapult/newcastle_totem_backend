@@ -1,0 +1,1066 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2018-05-15T08:52:02Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/165456827",
+        "artist_name": "Sean Henry",
+        "artwork_type": "sculpture",
+        "name": "Man with Potential Selves",
+        "start_date": "2003",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.6164939,
+              54.96949
+            ],
+            [
+              -1.6165024,
+              54.9694912
+            ],
+            [
+              -1.6165144,
+              54.9694653
+            ],
+            [
+              -1.6164957,
+              54.9694628
+            ],
+            [
+              -1.6164848,
+              54.9694884
+            ],
+            [
+              -1.6164931,
+              54.9694899
+            ],
+            [
+              -1.6164423,
+              54.9696153
+            ],
+            [
+              -1.6164309,
+              54.9696131
+            ],
+            [
+              -1.6164255,
+              54.9696245
+            ],
+            [
+              -1.6164385,
+              54.9696262
+            ],
+            [
+              -1.6163703,
+              54.9697961
+            ],
+            [
+              -1.6163535,
+              54.9697943
+            ],
+            [
+              -1.616351,
+              54.9698012
+            ],
+            [
+              -1.61637,
+              54.9698034
+            ],
+            [
+              -1.6164442,
+              54.9696151
+            ],
+            [
+              -1.6164939,
+              54.96949
+            ]
+          ]
+        ]
+      },
+      "id": "way/165456827"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/452442667",
+        "area": "yes",
+        "artwork_type": "landart",
+        "highway": "pedestrian",
+        "loc_name": "Blue Square",
+        "name": "Blue Carpet Square",
+        "source:name": "Local knowledge in OSM Note. Named after Blue Carpet artwork?",
+        "tourism": "artwork",
+        "wikidata": "Q4928945",
+        "wikipedia": "en:Blue Carpet"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.6095213,
+              54.9747258
+            ],
+            [
+              -1.6095732,
+              54.9747133
+            ],
+            [
+              -1.6094939,
+              54.9745886
+            ],
+            [
+              -1.6093573,
+              54.9743738
+            ],
+            [
+              -1.609309,
+              54.9743892
+            ],
+            [
+              -1.6093009,
+              54.9744138
+            ],
+            [
+              -1.6092795,
+              54.9744308
+            ],
+            [
+              -1.6092607,
+              54.9744339
+            ],
+            [
+              -1.6092393,
+              54.9744339
+            ],
+            [
+              -1.6092097,
+              54.9744215
+            ],
+            [
+              -1.6091373,
+              54.97444
+            ],
+            [
+              -1.6089979,
+              54.9742907
+            ],
+            [
+              -1.6087967,
+              54.9741444
+            ],
+            [
+              -1.6084131,
+              54.9743107
+            ],
+            [
+              -1.6084909,
+              54.97436
+            ],
+            [
+              -1.6085016,
+              54.9743769
+            ],
+            [
+              -1.6084963,
+              54.9743954
+            ],
+            [
+              -1.6083166,
+              54.974477
+            ],
+            [
+              -1.6082656,
+              54.97448
+            ],
+            [
+              -1.6082673,
+              54.9745608
+            ],
+            [
+              -1.6082539,
+              54.974577
+            ],
+            [
+              -1.608196,
+              54.9745963
+            ],
+            [
+              -1.6081131,
+              54.974624
+            ],
+            [
+              -1.6081102,
+              54.9746543
+            ],
+            [
+              -1.6082466,
+              54.9746581
+            ],
+            [
+              -1.6084265,
+              54.9746679
+            ],
+            [
+              -1.6084605,
+              54.9746603
+            ],
+            [
+              -1.6085182,
+              54.9746473
+            ],
+            [
+              -1.6088856,
+              54.9746534
+            ],
+            [
+              -1.6091297,
+              54.9747412
+            ],
+            [
+              -1.6092741,
+              54.9747283
+            ],
+            [
+              -1.6092853,
+              54.9746966
+            ],
+            [
+              -1.609301,
+              54.9746728
+            ],
+            [
+              -1.6093255,
+              54.9746565
+            ],
+            [
+              -1.6093738,
+              54.9746534
+            ],
+            [
+              -1.609406,
+              54.9746658
+            ],
+            [
+              -1.6094221,
+              54.9747012
+            ],
+            [
+              -1.6094569,
+              54.9747058
+            ],
+            [
+              -1.6094569,
+              54.9747335
+            ],
+            [
+              -1.6095213,
+              54.9747258
+            ]
+          ]
+        ]
+      },
+      "id": "way/452442667"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/497912718",
+        "artist_name": "Danny Lane",
+        "artwork_type": "sculpture",
+        "name": "Elipsis Eclipses",
+        "start_date": "2005",
+        "tourism": "artwork",
+        "website": "https://www.newcastle.gov.uk/leisure-libraries-and-tourism/arts-and-entertainment/public-art/public-art-grainger-town"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.6176062,
+              54.9724938
+            ],
+            [
+              -1.6175999,
+              54.9724938
+            ],
+            [
+              -1.6175939,
+              54.9724949
+            ],
+            [
+              -1.6175889,
+              54.9724972
+            ],
+            [
+              -1.6175858,
+              54.9724999
+            ],
+            [
+              -1.6175844,
+              54.9725031
+            ],
+            [
+              -1.6175847,
+              54.9725064
+            ],
+            [
+              -1.6175869,
+              54.9725095
+            ],
+            [
+              -1.6175905,
+              54.9725121
+            ],
+            [
+              -1.6175954,
+              54.9725138
+            ],
+            [
+              -1.617601,
+              54.9725146
+            ],
+            [
+              -1.6176067,
+              54.9725144
+            ],
+            [
+              -1.6176121,
+              54.9725131
+            ],
+            [
+              -1.6176165,
+              54.972511
+            ],
+            [
+              -1.6176197,
+              54.9725079
+            ],
+            [
+              -1.6176209,
+              54.9725043
+            ],
+            [
+              -1.6176199,
+              54.9725007
+            ],
+            [
+              -1.6176168,
+              54.9724976
+            ],
+            [
+              -1.6176121,
+              54.9724952
+            ],
+            [
+              -1.6176062,
+              54.9724938
+            ]
+          ]
+        ]
+      },
+      "id": "way/497912718"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/497912719",
+        "artist_name": "Rupert Clamp",
+        "artwork_type": "inscription",
+        "description": "\"FROM HERE IT IS NINE THOUSAND TWO HUNDRED AND FIFTY SEVEN CENTIMETRES (How are you feeling?) TO HERE\"",
+        "name": "How Long?",
+        "start_date": "2002",
+        "tourism": "artwork",
+        "website": "https://www.newcastle.gov.uk/leisure-libraries-and-tourism/arts-and-entertainment/public-art/public-art-grainger-town"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.6159001,
+              54.9698878
+            ],
+            [
+              -1.615898,
+              54.9698959
+            ],
+            [
+              -1.6160049,
+              54.9699108
+            ],
+            [
+              -1.6160403,
+              54.9699175
+            ],
+            [
+              -1.616073,
+              54.9699269
+            ],
+            [
+              -1.6161002,
+              54.9699418
+            ],
+            [
+              -1.6161238,
+              54.9699597
+            ],
+            [
+              -1.6161428,
+              54.9699774
+            ],
+            [
+              -1.6161583,
+              54.9699982
+            ],
+            [
+              -1.6161641,
+              54.9700216
+            ],
+            [
+              -1.6161627,
+              54.9700459
+            ],
+            [
+              -1.6161443,
+              54.9700962
+            ],
+            [
+              -1.6161205,
+              54.970134
+            ],
+            [
+              -1.6161335,
+              54.9701371
+            ],
+            [
+              -1.6161562,
+              54.9700986
+            ],
+            [
+              -1.6161767,
+              54.9700478
+            ],
+            [
+              -1.6161788,
+              54.9700221
+            ],
+            [
+              -1.6161756,
+              54.9699963
+            ],
+            [
+              -1.6161588,
+              54.969974
+            ],
+            [
+              -1.6161367,
+              54.9699548
+            ],
+            [
+              -1.6161124,
+              54.9699359
+            ],
+            [
+              -1.6160827,
+              54.9699201
+            ],
+            [
+              -1.6160447,
+              54.9699102
+            ],
+            [
+              -1.6160049,
+              54.9699033
+            ],
+            [
+              -1.6159001,
+              54.9698878
+            ]
+          ]
+        ]
+      },
+      "id": "way/497912719"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/403098725",
+        "material": "brick",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -1.6046253,
+            54.9710657
+          ],
+          [
+            -1.6045023,
+            54.9711065
+          ]
+        ]
+      },
+      "id": "way/403098725"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/333707542",
+        "name": "The Grainger Town Sculptural Map",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6175662,
+          54.9692311
+        ]
+      },
+      "id": "node/333707542"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/356843903",
+        "artist_name": "André Wallace",
+        "artwork_type": "sculpture",
+        "highway": "turning_circle",
+        "name": "River God",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6005886,
+          54.9702924
+        ]
+      },
+      "id": "node/356843903"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1506803647",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6174397,
+          54.9701419
+        ]
+      },
+      "id": "node/1506803647"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1829169862",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6146828,
+          54.9675177
+        ]
+      },
+      "id": "node/1829169862"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1829169883",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6144553,
+          54.9680786
+        ]
+      },
+      "id": "node/1829169883"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1832622996",
+        "artist_name": "Raf Fulcher",
+        "artwork_type": "sculpture",
+        "name": "Swirle Pavilion",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5987422,
+          54.9707022
+        ]
+      },
+      "id": "node/1832622996"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2470456601",
+        "addr:city": "Gateshead",
+        "addr:street": "West Street",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6037644,
+          54.9625768
+        ]
+      },
+      "id": "node/2470456601"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2667199786",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6046404,
+          54.9663371
+        ]
+      },
+      "id": "node/2667199786"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2667199818",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5959904,
+          54.9689282
+        ]
+      },
+      "id": "node/2667199818"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3040109933",
+        "artist_name": "British Artist Blacksmiths Association",
+        "artwork_type": "sculpture",
+        "date": "1996",
+        "name": "Blacksmiths Needle",
+        "source:name": "plaque nearby",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.597674,
+          54.9709347
+        ]
+      },
+      "id": "node/3040109933"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3071104532",
+        "artist_name": "Danny Lane",
+        "artwork_type": "sculpture",
+        "name": "Changing Lines",
+        "source": "wikipedia",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6043922,
+          54.9614791
+        ]
+      },
+      "id": "node/3071104532"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3716553296",
+        "source": "survey",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6176317,
+          55.0049373
+        ]
+      },
+      "id": "node/3716553296"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4032050517",
+        "artwork_type": "statue",
+        "name": "Rhino Statue",
+        "statue": "animal",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6126211,
+          54.9801778
+        ]
+      },
+      "id": "node/4032050517"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4054768049",
+        "description": "Light",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6015549,
+          54.9705153
+        ]
+      },
+      "id": "node/4054768049"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4054768050",
+        "description": "light",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6011626,
+          54.9706119
+        ]
+      },
+      "id": "node/4054768050"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4054768051",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6013298,
+          54.9705325
+        ]
+      },
+      "id": "node/4054768051"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4084962396",
+        "artwork_type": "sculpture",
+        "inscription": "Anchor from Spanish Armada 1588",
+        "material": "metal",
+        "name": "Anchor",
+        "sculpture_type": "historic",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6053485,
+          54.970004
+        ]
+      },
+      "id": "node/4084962396"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4084962414",
+        "artwork_type": "sculpture",
+        "material": "concrete",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6055667,
+          54.9707519
+        ]
+      },
+      "id": "node/4084962414"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4271501767",
+        "artwork_type": "sculpture",
+        "name": "Admirality Pattern Anchor",
+        "sculpture_type": "historic",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5874399,
+          54.9708786
+        ]
+      },
+      "id": "node/4271501767"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4361740216",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5530062,
+          54.9470923
+        ]
+      },
+      "id": "node/4361740216"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4397687844",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6046054,
+          54.9642177
+        ]
+      },
+      "id": "node/4397687844"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4397687845",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6045342,
+          54.964094
+        ]
+      },
+      "id": "node/4397687845"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4515609702",
+        "artist_name": "Eilis O’Connell",
+        "artwork_type": "sculpture",
+        "name": "Ever Changing",
+        "start_date": "2005",
+        "tourism": "artwork",
+        "website": "https://www.newcastle.gov.uk/leisure-libraries-and-tourism/arts-and-entertainment/public-art/public-art-grainger-town"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6205076,
+          54.9706725
+        ]
+      },
+      "id": "node/4515609702"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4516709404",
+        "artwork_type": "sculpture",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6197702,
+          54.9734964
+        ]
+      },
+      "id": "node/4516709404"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4516709405",
+        "artwork_type": "sculpture",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6196553,
+          54.973546
+        ]
+      },
+      "id": "node/4516709405"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4517332347",
+        "artist_name": "David Hamilton",
+        "artwork_type": "sculpture",
+        "name": "Parson's Polygon",
+        "railway": "ventilation_shaft",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6139493,
+          54.9740641
+        ]
+      },
+      "id": "node/4517332347"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5233478931",
+        "artwork_type": "statue",
+        "name": "Martin Luther King",
+        "subject:wikidata": "Q8027",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6160519,
+          54.9794882
+        ]
+      },
+      "id": "node/5233478931"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5233478938",
+        "artwork_type": "sculpture",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.615412,
+          54.9791308
+        ]
+      },
+      "id": "node/5233478938"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5233478939",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6153253,
+          54.9792364
+        ]
+      },
+      "id": "node/5233478939"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5233478940",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6155625,
+          54.979205
+        ]
+      },
+      "id": "node/5233478940"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5233478957",
+        "artwork_type": "sculpture",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6156017,
+          54.9779745
+        ]
+      },
+      "id": "node/5233478957"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5318331718",
+        "artwork_type": "sculpture",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5755189,
+          54.9668186
+        ]
+      },
+      "id": "node/5318331718"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5607277480",
+        "artwork_type": "sculpture",
+        "name": "Shoe",
+        "tourism": "artwork"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5353248,
+          54.9972952
+        ]
+      },
+      "id": "node/5607277480"
+    }
+  ]
+}

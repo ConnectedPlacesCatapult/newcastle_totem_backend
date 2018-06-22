@@ -1,0 +1,682 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2018-05-14T09:26:01Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/60200995",
+        "addr:city": "Newcastle upon Tyne",
+        "addr:postcode": "NE1 4EP",
+        "addr:street": "Times Square",
+        "building": "yes",
+        "name": "Centre for Life",
+        "phone": "+44 191 243 8210",
+        "source": "OS OpenData StreetView",
+        "tourism": "museum",
+        "website": "https://www.life.org.uk/",
+        "wikidata": "Q5062504",
+        "wikipedia": "en:Centre for Life"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.6214007,
+              54.967256
+            ],
+            [
+              -1.6213121,
+              54.9671169
+            ],
+            [
+              -1.6212752,
+              54.9669879
+            ],
+            [
+              -1.6211512,
+              54.9668398
+            ],
+            [
+              -1.6210542,
+              54.9667765
+            ],
+            [
+              -1.6209151,
+              54.9667228
+            ],
+            [
+              -1.6206964,
+              54.9667028
+            ],
+            [
+              -1.6206934,
+              54.9673633
+            ],
+            [
+              -1.6207596,
+              54.9673463
+            ],
+            [
+              -1.6212846,
+              54.967211
+            ],
+            [
+              -1.6213014,
+              54.9672648
+            ],
+            [
+              -1.6214007,
+              54.967256
+            ]
+          ]
+        ]
+      },
+      "id": "way/60200995"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/62084004",
+        "addr:city": "Newcastle upon Tyne",
+        "addr:postcode": "NE2 4PT",
+        "addr:street": "Barras Bridge",
+        "building": "yes",
+        "loc_name": "Hancock Museum",
+        "name": "Great North Museum: Hancock",
+        "operator": "Tyne & Wear Archives & Museum",
+        "phone": "+44 191 222 6765",
+        "source": "OS_OpenData_StreetView",
+        "tourism": "museum",
+        "website": "http://www.twmuseums.org.uk/great-north-museum.html",
+        "wheelchair": "yes",
+        "wikidata": "Q5647057"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.6128999,
+              54.9807734
+            ],
+            [
+              -1.6129862,
+              54.9807593
+            ],
+            [
+              -1.6130775,
+              54.9809262
+            ],
+            [
+              -1.6136803,
+              54.9808275
+            ],
+            [
+              -1.6135977,
+              54.9806596
+            ],
+            [
+              -1.6136835,
+              54.9806429
+            ],
+            [
+              -1.6136443,
+              54.9805603
+            ],
+            [
+              -1.6136035,
+              54.980567
+            ],
+            [
+              -1.6134783,
+              54.9803154
+            ],
+            [
+              -1.6135122,
+              54.9803098
+            ],
+            [
+              -1.613479,
+              54.9802431
+            ],
+            [
+              -1.6133479,
+              54.9802645
+            ],
+            [
+              -1.6133063,
+              54.980181
+            ],
+            [
+              -1.6131711,
+              54.9802031
+            ],
+            [
+              -1.6131964,
+              54.9802541
+            ],
+            [
+              -1.6129289,
+              54.9802979
+            ],
+            [
+              -1.6129098,
+              54.9802593
+            ],
+            [
+              -1.6127826,
+              54.9802802
+            ],
+            [
+              -1.6128267,
+              54.9803687
+            ],
+            [
+              -1.6127024,
+              54.9803891
+            ],
+            [
+              -1.6127312,
+              54.980447
+            ],
+            [
+              -1.6127892,
+              54.9804375
+            ],
+            [
+              -1.6129098,
+              54.9806801
+            ],
+            [
+              -1.6128491,
+              54.98069
+            ],
+            [
+              -1.6128999,
+              54.9807734
+            ]
+          ]
+        ]
+      },
+      "id": "way/62084004"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/93884394",
+        "addr:city": "North Shields",
+        "addr:housename": "Stephenson Railway Museum",
+        "addr:postcode": "NE29 8DX",
+        "addr:street": "Middle Engine Lane",
+        "building": "yes",
+        "name": "Stephenson Railway Museum",
+        "operator": "Stephens Railway Volunteers",
+        "phone": "+44 191 200 7146",
+        "source": "Bing",
+        "tourism": "museum",
+        "url": "https://stephensonrailwaymuseum.org.uk/"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.4971245,
+              55.0166548
+            ],
+            [
+              -1.4972054,
+              55.0166962
+            ],
+            [
+              -1.4972783,
+              55.0166493
+            ],
+            [
+              -1.4975402,
+              55.0167884
+            ],
+            [
+              -1.4977913,
+              55.0166331
+            ],
+            [
+              -1.4970953,
+              55.0162633
+            ],
+            [
+              -1.4970557,
+              55.0162878
+            ],
+            [
+              -1.4969732,
+              55.0163389
+            ],
+            [
+              -1.496931,
+              55.016365
+            ],
+            [
+              -1.4969856,
+              55.016394
+            ],
+            [
+              -1.4968988,
+              55.0164477
+            ],
+            [
+              -1.497027,
+              55.0165158
+            ],
+            [
+              -1.4969498,
+              55.0165654
+            ],
+            [
+              -1.4970139,
+              55.0165982
+            ],
+            [
+              -1.4969963,
+              55.0166091
+            ],
+            [
+              -1.497105,
+              55.0166669
+            ],
+            [
+              -1.4971245,
+              55.0166548
+            ]
+          ]
+        ]
+      },
+      "id": "way/93884394"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/175427748",
+        "name": "North East Aircraft Museum",
+        "tourism": "museum",
+        "wikidata": "Q7055178",
+        "wikipedia": "en:North East Aircraft Museum"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.4706676,
+              54.9233991
+            ],
+            [
+              -1.4673971,
+              54.9242525
+            ],
+            [
+              -1.4676367,
+              54.924589
+            ],
+            [
+              -1.4684969,
+              54.9243849
+            ],
+            [
+              -1.4687418,
+              54.9247401
+            ],
+            [
+              -1.4700132,
+              54.9244587
+            ],
+            [
+              -1.4700978,
+              54.9245733
+            ],
+            [
+              -1.4710588,
+              54.9243429
+            ],
+            [
+              -1.4709876,
+              54.9242404
+            ],
+            [
+              -1.4714099,
+              54.9241286
+            ],
+            [
+              -1.4708197,
+              54.9234295
+            ],
+            [
+              -1.4706676,
+              54.9233991
+            ]
+          ]
+        ]
+      },
+      "id": "way/175427748"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/184418753",
+        "addr:city": "Newcastle Upon Tyne",
+        "addr:housename": "Discovery Museum",
+        "addr:postcode": "NE1 4JA",
+        "addr:street": "Blandford Square",
+        "building": "yes",
+        "name": "Discovery Museum",
+        "operator": "TW Museums",
+        "phone": "+44 191 2326789",
+        "source": "Bing",
+        "tourism": "museum",
+        "website": "http://www.twmuseums.org.uk/discovery/visiting-us.html",
+        "wheelchair": "yes",
+        "wikidata": "Q4045311",
+        "wikipedia": "en:Discovery Museum"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.6251558,
+              54.9696193
+            ],
+            [
+              -1.6253377,
+              54.9689178
+            ],
+            [
+              -1.6244602,
+              54.9688428
+            ],
+            [
+              -1.6243165,
+              54.9693971
+            ],
+            [
+              -1.6245184,
+              54.9694143
+            ],
+            [
+              -1.6244979,
+              54.9694936
+            ],
+            [
+              -1.6245474,
+              54.9694978
+            ],
+            [
+              -1.6245298,
+              54.9695658
+            ],
+            [
+              -1.6251558,
+              54.9696193
+            ]
+          ]
+        ]
+      },
+      "id": "way/184418753"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/210833037",
+        "building": "yes",
+        "name": "Bowes Railway",
+        "tourism": "museum"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.5572487,
+              54.9237043
+            ],
+            [
+              -1.5572786,
+              54.9237685
+            ],
+            [
+              -1.5575802,
+              54.9237222
+            ],
+            [
+              -1.5576077,
+              54.9237813
+            ],
+            [
+              -1.5579604,
+              54.9237271
+            ],
+            [
+              -1.5579357,
+              54.923674
+            ],
+            [
+              -1.5580106,
+              54.9236625
+            ],
+            [
+              -1.5579779,
+              54.9235922
+            ],
+            [
+              -1.5572487,
+              54.9237043
+            ]
+          ]
+        ]
+      },
+      "id": "way/210833037"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/468078225",
+        "addr:city": "Wallsend",
+        "addr:postcode": "NE28 6HR",
+        "addr:street": "Buddle Street",
+        "building": "yes",
+        "name": "Segedunum",
+        "opening_hours": "10:00-15:00 (winter); 10:00-17:00 (summer)",
+        "phone": "+44 191 278 4217",
+        "source": "Bing",
+        "tourism": "museum",
+        "website": "www.segedunumromanfort.org.uk"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.5303541,
+              54.9880446
+            ],
+            [
+              -1.5306505,
+              54.988317
+            ],
+            [
+              -1.5307654,
+              54.9882758
+            ],
+            [
+              -1.5310511,
+              54.9885384
+            ],
+            [
+              -1.5311098,
+              54.9885173
+            ],
+            [
+              -1.5311565,
+              54.9885602
+            ],
+            [
+              -1.5312675,
+              54.9885204
+            ],
+            [
+              -1.531095,
+              54.9883619
+            ],
+            [
+              -1.5310998,
+              54.9883604
+            ],
+            [
+              -1.531114,
+              54.9883607
+            ],
+            [
+              -1.5311514,
+              54.9883521
+            ],
+            [
+              -1.5311795,
+              54.9883355
+            ],
+            [
+              -1.5311932,
+              54.9883145
+            ],
+            [
+              -1.5311914,
+              54.9882921
+            ],
+            [
+              -1.5311742,
+              54.988272
+            ],
+            [
+              -1.5311514,
+              54.9882598
+            ],
+            [
+              -1.5311231,
+              54.9882523
+            ],
+            [
+              -1.531092,
+              54.9882504
+            ],
+            [
+              -1.5310913,
+              54.9882505
+            ],
+            [
+              -1.5310347,
+              54.9881959
+            ],
+            [
+              -1.5309871,
+              54.988213
+            ],
+            [
+              -1.5309481,
+              54.9882269
+            ],
+            [
+              -1.5306388,
+              54.9879426
+            ],
+            [
+              -1.5303541,
+              54.9880446
+            ]
+          ]
+        ]
+      },
+      "id": "way/468078225"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/33787322",
+        "description": "Historical records such as census, burials",
+        "name": "Tyne & Wear Archives",
+        "tourism": "museum"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6246039,
+          54.9688866
+        ]
+      },
+      "id": "node/33787322"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4300571650",
+        "addr:city": "Springwell",
+        "addr:postcode": "NE9 7QJ",
+        "addr:street": "Springwell Road",
+        "name": "Bowes Railway",
+        "tourism": "museum",
+        "website": "http://bowesrailway.uk/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5571281,
+          54.9233648
+        ]
+      },
+      "id": "node/4300571650"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4500732920",
+        "addr:city": "Newcastle Upon Tyne",
+        "addr:housenumber": "55",
+        "addr:postcode": "NE1 2PQ",
+        "addr:street": "Lime Street",
+        "name": "Ouseburn Trust - Victoria Tunnel Tours",
+        "phone": "+44 191 261 6596",
+        "tourism": "museum",
+        "website": "https://ouseburntrust.org.uk/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5923994,
+          54.9749231
+        ]
+      },
+      "id": "node/4500732920"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5113891922",
+        "alt_name": "North of England Institute of Mining and Mechanical Engineers",
+        "name": "Mining Institute",
+        "source": "survey",
+        "tourism": "museum",
+        "wikidata": "Q7057517"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6143322,
+          54.9694305
+        ]
+      },
+      "id": "node/5113891922"
+    }
+  ]
+}
