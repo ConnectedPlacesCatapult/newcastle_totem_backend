@@ -1,0 +1,218 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2018-04-20T10:51:02Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/386176909",
+        "amenity": "toilets",
+        "building": "yes",
+        "source": "local knowledge"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.534568,
+              54.991642
+            ],
+            [
+              -1.5345222,
+              54.9915704
+            ],
+            [
+              -1.5343924,
+              54.9915977
+            ],
+            [
+              -1.5344382,
+              54.9916694
+            ],
+            [
+              -1.534568,
+              54.991642
+            ]
+          ]
+        ]
+      },
+      "id": "way/386176909"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/312071660",
+        "amenity": "toilets",
+        "created_by": "Merkaartor 0.11"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6038966,
+          54.9440904
+        ]
+      },
+      "id": "node/312071660"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/676045674",
+        "amenity": "toilets"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5937974,
+          54.9978692
+        ]
+      },
+      "id": "node/676045674"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1975777468",
+        "amenity": "toilets",
+        "capacity": "400",
+        "fee": "yes",
+        "name": "Grainger Town multi-storey",
+        "parking": "multi-storey",
+        "parking:motorcycle": "3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6218984,
+          54.9691561
+        ]
+      },
+      "id": "node/1975777468"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2169732398",
+        "amenity": "toilets"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5989343,
+          54.9357368
+        ]
+      },
+      "id": "node/2169732398"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2666047710",
+        "amenity": "toilets",
+        "diaper": "yes",
+        "female": "yes",
+        "male": "yes",
+        "name": "Gateshead",
+        "opening_hours": "Mo-Su 08:00-18:00",
+        "source": "survey",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6021026,
+          54.9623795
+        ]
+      },
+      "id": "node/2666047710"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3042094043",
+        "amenity": "toilets",
+        "building": "yes",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5989363,
+          54.9987002
+        ]
+      },
+      "id": "node/3042094043"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4605682462",
+        "amenity": "toilets",
+        "diaper": "yes",
+        "female": "yes",
+        "male": "yes",
+        "name": "Tesco Extra toilets",
+        "opening_hours": "Mo-Sa 00:00-24:00, Su 10:00-16:00",
+        "source": "survey",
+        "wheelchair": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6013013,
+          54.9630482
+        ]
+      },
+      "id": "node/4605682462"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4930924117",
+        "amenity": "toilets"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6183208,
+          54.9685762
+        ]
+      },
+      "id": "node/4930924117"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4930924118",
+        "amenity": "toilets"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6171121,
+          54.9681638
+        ]
+      },
+      "id": "node/4930924118"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5270329329",
+        "amenity": "toilets",
+        "level": "2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6163663,
+          54.9727298
+        ]
+      },
+      "id": "node/5270329329"
+    }
+  ]
+}
