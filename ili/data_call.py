@@ -24,14 +24,17 @@ totem_location_1_lon = totem_lon
 totem_location_2_lat = 54.979988
 totem_location_2_lon = -1.611195
 
+## Load keys from shared location
+with open('../keys.json') as keys:
+    keys = json.load(keys)
 
 ## Load back POI data
-with open('places_all.json') as places_all:  
+with open('places_all.json') as places_all:
     places_all = json.load(places_all)
 
 ##### Calling google places as backoff when there's no data nearby
 def call_google_places(totem_location_lat,totem_location_lon, subcategory, jitter):
-    gmaps = googlemaps.Client(key=gmaps_key)
+    gmaps = googlemaps.Client(key=keys["gmaps_key"])
     places = []
 
     if subcategory == 'bar' or subcategory == 'pub':
@@ -42,7 +45,7 @@ def call_google_places(totem_location_lat,totem_location_lon, subcategory, jitte
                                            open_now=True, keyword='pub')
         places.extend(nearby_result_bar['results'])
         places.extend(nearby_result_pub['results'])
-        
+
     elif subcategory == 'cafe':
     	print "Google backoff: Adding cafes",
         nearby_result_cafe = gmaps.places_nearby(location=[totem_location_lat, totem_location_lon],radius = jitter,
@@ -59,7 +62,7 @@ def call_google_places(totem_location_lat,totem_location_lon, subcategory, jitte
     places = [json.loads(t) for t in filter_duplicates]
 
     places_gmaps = []
-    
+
     ## cleaning googlemaps
     # get only the one that has subcategory as a first type
     for i in places:
@@ -91,7 +94,7 @@ def decode_polyline(polyline_str):
     # while loop iteration, a single coordinate is decoded.
     while index < len(polyline_str):
         # Gather lat/lon changes, store them in a dictionary to apply them later
-        for unit in ['latitude', 'longitude']: 
+        for unit in ['latitude', 'longitude']:
             shift, result = 0, 0
 
             while True:
@@ -112,22 +115,22 @@ def decode_polyline(polyline_str):
 
         coordinates.append((lat / 100000.0, lng / 100000.0))
 
-    return coordinates  
+    return coordinates
 
 ##### Getting closest POIS
 def get_closest(category, places_all, dist):
     if isinstance(category, list):
-        closest_totem1 = filter(lambda d: d['properties'][0]['distance_to_totem_1'] < dist, 
+        closest_totem1 = filter(lambda d: d['properties'][0]['distance_to_totem_1'] < dist,
                filter(lambda d: d['category'] in [i for i in category], places_all))
     else:
-        closest_totem1 = filter(lambda d: d['properties'][0]['distance_to_totem_1'] < dist, 
+        closest_totem1 = filter(lambda d: d['properties'][0]['distance_to_totem_1'] < dist,
                filter(lambda d: d['category'] in [category], places_all))
 
     return closest_totem1
 
 ##### Calling dark sky
 def dark_sky_call(totem_lat, totem_lon):
-    page = 'https://api.darksky.net/forecast/'+darksky_key+'/{0},{1}'.format(totem_lat,totem_lon)
+    page = 'https://api.darksky.net/forecast/'+keys["darksky_key"]+'/{0},{1}'.format(totem_lat,totem_lon)
     r = requests.get(page)
     data = r.json()
     precipIntensity = list(data["minutely"]["data"][-1].values())[0]
@@ -156,12 +159,12 @@ def flip(p):
 
 ##### Recommendation engine. minutes is the maximum allowable walking distance. places_all is the pois file
 def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
-    
+
     now = datetime.now().hour
     rain_probability = weather_data[0]
     temperature = logistic.cdf(weather_data[1],loc=12, scale=5)
-    clear = weather_data[2]    
-    
+    clear = weather_data[2]
+
     ##### Adding the max walking distance
     if minutes == 5:
         jitter = random.randint(4,8)
@@ -182,13 +185,13 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
     else:
         subcategories = ['bar']
         extended_categories = ['food_drinks','tranquility']
-        extended_categories2 = ['culture', 'attractions']        
-    
+        extended_categories2 = ['culture', 'attractions']
+
     #### TODO BEGIN Wrapping condition for GNE
 
     #### BEGIN check for event --> send to event
     # filtering events if they are due to start (two hours from now)
-    
+
     ### flip coin for events
     flip_coin = flip(0.6)
     print flip_coin
@@ -198,25 +201,25 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
                                        '%Y-%m-%dT%H:%M:%S').hour  > now - 2 and datetime.strptime(d['properties'][0]['start'],
                                        '%Y-%m-%dT%H:%M:%S').hour < now + 2) ),
                         get_closest('event', places_all, 1.4 * 60 * jitter))
-        
 
-    else: 
+
+    else:
         events = []
     ###
-    
+
     # If there are no events starting one hours from now
     if not events:
         print 'no events'
 
         # check for clear weather --> send to park
-        if "clear" in clear: 
+        if "clear" in clear:
             print "its clear!"
 
             recommendation = random.sample(filter(lambda d: d['category'] in 'tranquility',
                                      get_closest('tranquility', places_all, 1.4 * 60 * jitter)), 1)
 
             # calculating the route
-            gmaps_route = googlemaps.Client(key=groutes_key)
+            gmaps_route = googlemaps.Client(key=keys["groutes_key"])
             route = gmaps_route.directions(origin=[totem_lat,
                                                    totem_lon],
                                            destination = [float(recommendation[0]['coordinates'][1]),
@@ -234,21 +237,21 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
                 print "its raining"
                 data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories,
                                      get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
-                
+
                 if not data:
                     print subcategories
                     data = call_google_places(totem_lat, totem_lon, subcategories, 1.4 * 60 * jitter)
                     data.extend(get_closest(extended_categories,
                                places_all, 1.4 * 60 * jitter))
-                else:    
+                else:
                     data.extend(get_closest(extended_categories,
                                places_all, 1.4 * 60 * jitter))
                     recommendation = random.sample(data,1)
-                    
+
                 # random sample from the first three entries
-                recommendation = random.sample(data[0:3],1)                    
+                recommendation = random.sample(data[0:3],1)
                 # calculating the route
-                gmaps_route = googlemaps.Client(key=groutes_key)
+                gmaps_route = googlemaps.Client(key=keys["groutes_key"])
                 route = gmaps_route.directions(origin=[totem_lat,
                                                        totem_lon],
                                                destination = [float(recommendation[0]['coordinates'][1]),
@@ -265,22 +268,22 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
 
                 data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories[0],
                      get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
-                
+
                 if not data:
                     data = call_google_places(totem_lat, totem_lon, subcategories[0], 1.4 * 60 * jitter)
-                    
+
                     data.extend(get_closest(extended_categories,
                                places_all, 1.4 * 60 * jitter))
-                else:    
+                else:
                     data.extend(get_closest(extended_categories,
                                places_all, 1.4 * 60 * jitter))
                     recommendation = random.sample(data,1)
-                
+
                 # random sample from the first three entries
                 recommendation = random.sample(data[0:3],1)
 
                 # calculating the route
-                gmaps_route = googlemaps.Client(key=groutes_key)
+                gmaps_route = googlemaps.Client(key=keys["groutes_key"])
                 route = gmaps_route.directions(origin=[totem_lat,
                                                        totem_lon],
                                                destination = [float(recommendation[0]['coordinates'][1]),
@@ -291,13 +294,13 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
                     polyline.extend(decode_polyline(i['polyline']['points']))
 
                 recommendation[0]['properties'][0]['route_direct'] = polyline
-                
+
             # check for rain and low temperature --> send to cafe or culture or attractions
             elif rain_probability < 0.5 and temperature < 0.5:
                 print "its cold!"
                 data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories[0],
                                      get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
-                
+
                 if not data:
                     data = call_google_places(totem_lat, totem_lon, subcategories[0], 1.4 * 60 * jitter)
                     data.extend(get_closest(extended_categories,
@@ -305,12 +308,12 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
                 else:
                     data.extend(get_closest(extended_categories,
                                places_all, 1.4 * 60 * jitter))
-                
+
                 # random sample from the first three entries
                 recommendation = random.sample(data[0:3],1)
-                
+
                 # calculating the route
-                gmaps_route = googlemaps.Client(key=groutes_key)
+                gmaps_route = googlemaps.Client(key=keys["groutes_key"])
                 route = gmaps_route.directions(origin=[totem_lat,
                                                        totem_lon],
                                                destination = [float(recommendation[0]['coordinates'][1]),
@@ -326,7 +329,7 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
     else:
         recommendation = random.sample(events,1)
         # calculating the route
-        gmaps_route = googlemaps.Client(key=groutes_key)
+        gmaps_route = googlemaps.Client(key=keys["groutes_key"])
         route = gmaps_route.directions(origin=[totem_lat,
                                                totem_lon],
                                        destination = [float(recommendation[0]['coordinates'][1]),
@@ -338,16 +341,16 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
 
         recommendation[0]['properties'][0]['route_direct'] = polyline
     return recommendation
-    
+
 ##### Adding intermediate stops
 def adding_stopovers(minutes ,totem_lat, totem_lon, recommendation):
     if minutes == 15:
-        
+
         # adding a one stopover --> attraction
         stopover = random.sample(filter(lambda d: (d['category'] == 'attractions' and d['properties'][0]['distance_to_totem_1'] < 300), places_all),1)
 
         # calculating the route
-        gmaps_route = googlemaps.Client(key=groutes_key)
+        gmaps_route = googlemaps.Client(key=keys["groutes_key"])
         route = gmaps_route.directions(origin=[totem_lat,
                                                totem_lon],
                                        destination = [float(recommendation[0]['coordinates'][1]),
@@ -359,7 +362,7 @@ def adding_stopovers(minutes ,totem_lat, totem_lon, recommendation):
         for l in route[0]['legs']:
             for i in l['steps']:
                 polyline.extend(decode_polyline(i['polyline']['points']))
-                
+
         recommendation[0]['properties'][0]['route_leisure'] = polyline #str(LineString(polyline))
         recommendation[0]['properties'][0]['stopovers_leisure'] = [{'subcategory': stopover[0]['properties'][0]['subcategory'],
                                                             'coordinates' : stopover[0]['coordinates'],
@@ -371,7 +374,7 @@ def adding_stopovers(minutes ,totem_lat, totem_lon, recommendation):
                              places_all),2)
 
         # calculating the route
-        gmaps_route = googlemaps.Client(key=groutes_key)
+        gmaps_route = googlemaps.Client(key=keys["groutes_key"])
         route = gmaps_route.directions(origin=[totem_lat,
                                                totem_lon],
                                        destination = [float(recommendation[0]['coordinates'][1]),
@@ -385,7 +388,7 @@ def adding_stopovers(minutes ,totem_lat, totem_lon, recommendation):
         for l in route[0]['legs']:
             for i in l['steps']:
                 polyline.extend(decode_polyline(i['polyline']['points']))
-        
+
         recommendation[0]['properties'][0]['route_curious'] = polyline #str(LineString(polyline))
         recommendation[0]['properties'][0]['stopovers_curious'] = [{'subcategory': stopover[0]['properties'][0]['subcategory'],
                                                             'coordinates' : stopover[0]['coordinates'],
@@ -397,7 +400,7 @@ def adding_stopovers(minutes ,totem_lat, totem_lon, recommendation):
                                                            'category': stopover[0]['category']}]
     else:
         pass
-    return recommendation 
+    return recommendation
 
 
 
@@ -405,7 +408,7 @@ def adding_stopovers(minutes ,totem_lat, totem_lon, recommendation):
 try:
     for file in os.listdir("~/information_local_influencer"):
         if "recommendation" in file:
-            with open(os.path.join("~/information_local_influencer", file)) as recommendation:  
+            with open(os.path.join("~/information_local_influencer", file)) as recommendation:
                 print "Filtering: ", recommendation[0]['name']
                 places_all = filter(lambda d: d['name'] != recommendation[0]['name'], places_all)
 except Exception, e:
@@ -431,7 +434,7 @@ places_temp = list(flatten(places_temp))
 
 
 tranquility  = random.sample(filter(lambda d: d['properties'][0]['subcategory'] in ['park', 'gardens'],
-                     get_closest('tranquility', places_all, 1.4 * 60 * 30)), 
+                     get_closest('tranquility', places_all, 1.4 * 60 * 30)),
                              3-len(filter(lambda c: c['category'] == 'tranquility', places_temp)))
 
 tranquility.append(filter(lambda c: c['category'] == 'tranquility', places_temp))
@@ -453,7 +456,7 @@ places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_cur
 places_temp = list(flatten(places_temp))
 
 attractions  = random.sample(filter(lambda d: d['category'] ==  'attractions',
-                     get_closest('attractions', places_all, 1.4 * 60 * 30)), 
+                     get_closest('attractions', places_all, 1.4 * 60 * 30)),
                              3-len(filter(lambda c: c['category'] == 'attractions', places_temp)))
 
 attractions.append(filter(lambda c: c['category'] == 'attractions', places_temp))
@@ -464,7 +467,7 @@ for i in attractions:
             places_rest.append(j)
     else:
         places_rest.append(i)
-        
+
 
 places_temp = []
 places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_leisure']])
@@ -473,7 +476,7 @@ places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_cur
 places_temp = list(flatten(places_temp))
 
 culture  = random.sample(filter(lambda d: d['category'] ==  'culture',
-                     get_closest('culture', places_all, 1.4 * 60 * 30)), 
+                     get_closest('culture', places_all, 1.4 * 60 * 30)),
                              3-len(filter(lambda c: c['category'] == 'culture', places_temp)))
 
 culture.append(filter(lambda c: c['category'] == 'culture', places_temp))
@@ -484,7 +487,7 @@ for i in culture:
             places_rest.append(j)
     else:
         places_rest.append(i)
-        
+
 places_temp = []
 places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_leisure']])
 places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_curious']])
@@ -492,7 +495,7 @@ places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_cur
 places_temp = list(flatten(places_temp))
 
 food_drinks  = random.sample(filter(lambda d: d['category'] ==  'food_drinks',
-                     get_closest('food_drinks', places_all, 1.4 * 60 * 30)), 
+                     get_closest('food_drinks', places_all, 1.4 * 60 * 30)),
                              3-len(filter(lambda c: c['category'] == 'food_drinks', places_temp)))
 
 food_drinks.append(filter(lambda c: c['category'] == 'food_drinks', places_temp))
@@ -503,7 +506,7 @@ for i in food_drinks:
             places_rest.append(j)
     else:
         places_rest.append(i)
-        
+
 
 recommendation[0]['properties'][0]['amenities'] = places_rest
 recommendation[0]['properties'][0]['two_hour_rain_forecast'] = weather_data[3]
@@ -544,7 +547,7 @@ counter = 1
 for i in range(0, len(recommendation[0]['properties'][0]['amenities'])):
     recommendation[0]['properties'][0]['amenities'][i]['counter'] = counter
     counter = counter+1
-    
+
 ###### Add permanent pois
 ## toilets
 recommendation[0]['properties'][0]['amenities'].extend(filter(lambda d: d['category'] == 'toilet', places_all))
@@ -557,11 +560,11 @@ scope = ['https://spreadsheets.google.com/feeds',
         'https://www.googleapis.com/auth/drive']
 creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
 client = gspread.authorize(creds)
- 
+
 # Find a workbook by name and open the first sheet
 # Make sure you use the right name here.
 sheet = client.open("totem_messages").sheet1
- 
+
 # Extract all of the values
 list_of_hashes = sheet.get_all_records()
 df = pd.DataFrame(list_of_hashes)
@@ -571,7 +574,7 @@ now = datetime.now().hour
 day_number = datetime.now().weekday()
 rain_probability = weather_data[0]
 temperature = logistic.cdf(weather_data[1],loc=12, scale=5)
-clear = weather_data[2]  
+clear = weather_data[2]
 
 
 anytime = ["Aareet!", "Hey there!", "You look nice!", "Alreet Hen!"]
@@ -616,21 +619,21 @@ else:
         action_msg = weekday_late_evening[random.sample(xrange(len(weekday_late_evening)), 1)[0]]
     else:
         action_msg =  weekday_night[random.sample(xrange(len(weekday_night)), 1)[0]]
-    
+
 if "rain" in recommendation[0]['properties'][0]['two_hour_weather_forecast']:
     action_msg = action_msg + "_" + rainy_prob[random.sample(xrange(len(rainy_prob)), 1)[0]]
 else:
     if "clear" in clear and temperature <= 0.2:
         action_msg = action_msg + "_" + sun_cold[random.sample(xrange(len(sun_cold)), 1)[0]]
-    elif "clear" in clear and temperature > 0.2 and temperature < 0.8:     
+    elif "clear" in clear and temperature > 0.2 and temperature < 0.8:
         action_msg = action_msg + "_" + sun_warm[random.sample(xrange(len(sun_warm)), 1)[0]]
-    elif "clear" in clear and temperature >= 0.8:     
+    elif "clear" in clear and temperature >= 0.8:
         action_msg = action_msg + "_" + hot[random.sample(xrange(len(hot)), 1)[0]]
-    elif "cloudy" in clear and temperature <= 0.2:     
+    elif "cloudy" in clear and temperature <= 0.2:
         action_msg = action_msg + "_" + cloudy_cold[random.sample(xrange(len(cloudy_cold)), 1)[0]]
-    elif "cloudy" in clear and temperature > 0.2:     
+    elif "cloudy" in clear and temperature > 0.2:
         action_msg = action_msg + "_" + cloudy_warm[random.sample(xrange(len(cloudy_warm)), 1)[0]]
-    elif "rain" in clear:     
+    elif "rain" in clear:
         action_msg = action_msg + "_" + rainy[random.sample(xrange(len(rainy)), 1)[0]]
     else:
         pass
@@ -648,7 +651,7 @@ elif recommendation[0]['category'] == 'food_drinks':
         action_msg = action_msg + "_" + food[random.sample(xrange(len(food)), 1)[0]] + ":_" + recommendation[0]['name']
     elif now >15 and now <=2:
         action_msg = action_msg + "_" + drinks[random.sample(xrange(len(drinks)), 1)[0]] + ":_" + recommendation[0]['name']
-    else: 
+    else:
         action_msg = action_msg + "_" + food[random.sample(xrange(len(food)), 1)[0]] + ":_" + recommendation[0]['name']
 
 print action_msg
@@ -659,15 +662,15 @@ recommendation[0]['totem_coords'] = [totem_location_1_lon,totem_location_1_lat]
 ## Saving recommendation for further checking and uploading to s3
 uploading_date = datetime.today()
 print datetime.today()
-with open('recommendation-totem-1.json', 'w') as outfile:  
-    json.dump(recommendation, outfile)   
+with open('recommendation-totem-1.json', 'w') as outfile:
+    json.dump(recommendation, outfile)
 
-with open('recommendation_'+datetime.strftime( uploading_date, "%Y-%m-%d_%H")+'.json', 'w') as outfile:  
-    json.dump(recommendation, outfile)   
-    
-ACCESS_KEY_ID = boto3_access_key
-ACCESS_SECRET_KEY = boto3_secret_access_key
-BUCKET_NAME = bucket_name
+with open('recommendation_'+datetime.strftime( uploading_date, "%Y-%m-%d_%H")+'.json', 'w') as outfile:
+    json.dump(recommendation, outfile)
+
+ACCESS_KEY_ID = keys["boto3_access_key"]
+ACCESS_SECRET_KEY = keys["boto3_secret_access_key"]
+BUCKET_NAME = keys["bucket_name"]
 s3 = boto3.resource(
     's3',
      aws_access_key_id=ACCESS_KEY_ID,
@@ -680,4 +683,3 @@ s3.Bucket(BUCKET_NAME).upload_file('recommendation-totem-1.json',
                                                                                                 'ACL':'public-read'})
 
 print('recommendation uploaded')
-

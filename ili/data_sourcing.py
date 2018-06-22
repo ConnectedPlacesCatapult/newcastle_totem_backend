@@ -4,7 +4,12 @@ import numpy as np
 from eventbrite import Eventbrite
 from datetime import datetime, time
 
-##### Foursquare sourcing. 
+## Load keys from shared location
+with open('../keys.json') as keys:
+    keys = json.load(keys)
+
+
+##### Foursquare sourcing.
 ##### Getting the trending places by constructing a grid and searching by 100 meters radius
 
 def point_from_d_horizontal(x1, y1, d, theta):
@@ -45,16 +50,16 @@ for i in range(25*8):
             p = point_from_d_vertical(p[0], p[1], 0.0029, 0)
             coords.append(p)
             flip = False
-            
-## Foursquare calls 
+
+## Foursquare calls
 url = 'https://api.foursquare.com/v2/venues/explore'
 
 responses = []
 for i in coords:
-    
+
     params = dict(
-      client_id=fs_client_id,
-      client_secret=fs_client_secret,
+      client_id=keys["fs_client_id"],
+      client_secret=keys["fs_client_secret"],
       v='20180323',
       ll='{0},{1}'.format(i[0], i[1]),
       section = 'trending',
@@ -69,7 +74,7 @@ with open('foursquare.json', 'wb') as outfile:
     json.dump(responses, outfile)
 
 
-##### Eventbrite sourcing. 
+##### Eventbrite sourcing.
 ##### Getting todays events for all categories.
 
 search_args = {"location.latitude": "54.967155",
@@ -78,13 +83,13 @@ search_args = {"location.latitude": "54.967155",
                "start_date.keyword": "today"}
 
 def tod_events(search_args, category, am_end, pm_st):
-    eventbrite = Eventbrite(eventbrite_key)
+    eventbrite = Eventbrite(keys["eventbrite_key"])
     events = eventbrite.event_search(**search_args)
     ## Use this for filtering
-#     events = [x for x in events['events'] if x['category_id'] == "103"] 
+#     events = [x for x in events['events'] if x['category_id'] == "103"]
 
     events = [x for x in events['events']]
-    
+
     for item in events:
         location_id = eventbrite.get('/venues/' + str(item['venue_id']))
         item.update( {"latitude": location_id['latitude']})
@@ -100,10 +105,10 @@ eventbrite = tod_events(search_args, '', 10, 23)
 with open('eventbrite_events.json', 'wb') as outfile:
     json.dump(eventbrite, outfile)
 
-##### Meetup sourcing. 
+##### Meetup sourcing.
 ##### Getting todays events for all categories.
 
-r = requests.get("https://api.meetup.com/find/groups?lat=54.967155&lon=-1.613736&radius=5&order=members&key="+meetup_key)
+r = requests.get("https://api.meetup.com/find/groups?lat=54.967155&lon=-1.613736&radius=5&order=members&key="+keys["meetup_key"])
 
 events = r.json()
 for item in events:
@@ -116,7 +121,6 @@ for item in events:
         print str(e)
         item["address"] = None
 
-## Save data to a file so they can be referenced later       
+## Save data to a file so they can be referenced later
 with open('meetup_events.json', 'wb') as outfile:
     json.dump(events, outfile)
-    
