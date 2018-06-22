@@ -1,0 +1,106 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2018-05-14T09:25:02Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/746594170",
+        "name": "Weetslade Colliery Country Park",
+        "tourism": "viewpoint"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6043511,
+          55.0469362
+        ]
+      },
+      "id": "node/746594170"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1117349898",
+        "tourism": "viewpoint"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5073563,
+          55.0242399
+        ]
+      },
+      "id": "node/1117349898"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2226686607",
+        "information": "board",
+        "source": "survey",
+        "tourism": "viewpoint"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5372674,
+          55.0129964
+        ]
+      },
+      "id": "node/2226686607"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4626121218",
+        "direction": "247, WSW",
+        "man_made": "tower",
+        "name": "Segedunum Fort Viewing Tower",
+        "tourism": "viewpoint",
+        "tower:type": "observation"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5310146,
+          54.9883563
+        ]
+      },
+      "id": "node/4626121218"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5346848924",
+        "name": "Thornley Wood feeding station and hide",
+        "tourism": "viewpoint"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.7246758,
+          54.938874
+        ]
+      },
+      "id": "node/5346848924"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5535980056",
+        "tourism": "viewpoint"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.4564504,
+          55.0000849
+        ]
+      },
+      "id": "node/5535980056"
+    }
+  ]
+}

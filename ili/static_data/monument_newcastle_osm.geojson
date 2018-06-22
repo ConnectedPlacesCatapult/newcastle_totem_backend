@@ -1,0 +1,155 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2018-05-15T08:56:02Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/502709891",
+        "historic": "monument",
+        "name": "Monument to Cardinal Hume",
+        "place": "square",
+        "start_date": "2002"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -1.6188553,
+              54.9692042
+            ],
+            [
+              -1.6190082,
+              54.9689733
+            ],
+            [
+              -1.6189384,
+              54.9689348
+            ],
+            [
+              -1.6188526,
+              54.9689548
+            ],
+            [
+              -1.6187296,
+              54.9689919
+            ],
+            [
+              -1.6186484,
+              54.969014
+            ],
+            [
+              -1.6185763,
+              54.9690364
+            ],
+            [
+              -1.6185281,
+              54.9690549
+            ],
+            [
+              -1.6185161,
+              54.9690726
+            ],
+            [
+              -1.6185146,
+              54.9690903
+            ],
+            [
+              -1.6185173,
+              54.9691118
+            ],
+            [
+              -1.6185373,
+              54.9691265
+            ],
+            [
+              -1.6185656,
+              54.9691365
+            ],
+            [
+              -1.6186568,
+              54.9691612
+            ],
+            [
+              -1.618746,
+              54.9691835
+            ],
+            [
+              -1.6188553,
+              54.9692042
+            ]
+          ]
+        ]
+      },
+      "id": "way/502709891"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/157586147",
+        "historic": "monument",
+        "name": "Armstrong"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6128195,
+          54.9796036
+        ]
+      },
+      "id": "node/157586147"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/573854794",
+        "historic": "monument",
+        "name": "Grey's Monument",
+        "wikidata": "Q5608058"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6131525,
+          54.9738301
+        ]
+      },
+      "id": "node/573854794"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1769979296",
+        "historic": "monument",
+        "name": "Stephenson"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6149936,
+          54.9696064
+        ]
+      },
+      "id": "node/1769979296"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4409793543",
+        "historic": "monument",
+        "name": "Dunston Monument"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6472402,
+          54.9487727
+        ]
+      },
+      "id": "node/4409793543"
+    }
+  ]
+}
