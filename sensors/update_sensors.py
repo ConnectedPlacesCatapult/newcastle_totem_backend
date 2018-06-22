@@ -27,15 +27,19 @@ import time
 import boto3
 from botocore.client import Config
 
+# LOAD KEY DETAILS
+with open('../keys.json') as keys:
+    keys = json.load(keys)
+
 ### NEWCASTLE API ACCESS
-API_KEY = "0jfaukx6vufu4lgprzcrj7ziq32sz6slhltxeqs3h84j8ik2x5fof57jo60tugc5mwj6sl2rpy2puqzgrqltq8h6cs"
+API_KEY = keys["uo_api_key"]
 API_BASE = "http://uoweb1.ncl.ac.uk/api/v1/"
 API_KEY_PARAM = "api_key=" + API_KEY
 
 ### S3 ACCESS
-ACCESS_KEY_ID = 'AKIAINRS6Y72NCDYTV3Q'
-ACCESS_SECRET_KEY = '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'
-BUCKET_NAME = 'newcastle.tech.totem'
+ACCESS_KEY_ID = keys["boto3_access_key"]
+ACCESS_SECRET_KEY = keys["boto3_secret_access_key"]
+BUCKET_NAME = keys["bucket_name"]
 
 ### DATA AGGREGATION VARS, used when no specific sensor is given
 AGG_METHOD = "nearest" # one of "nearest", "latest", or "average"
