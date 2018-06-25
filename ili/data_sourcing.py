@@ -54,6 +54,10 @@ for i in range(25*8):
 ## Foursquare calls
 url = 'https://api.foursquare.com/v2/venues/explore'
 
+print "Foursquare stuff:"
+print keys["fs_client_id"]
+print keys["fs_client_secret"]
+
 responses = []
 for i in coords:
 
@@ -113,7 +117,7 @@ r = requests.get("https://api.meetup.com/find/groups?lat=54.967155&lon=-1.613736
 events = r.json()
 for item in events:
     try:
-        location_id = requests.get("https://api.meetup.com/2/venues?&event_id={0}&key="+meetup_key.format(item['next_event']['id'])).json()
+        location_id = requests.get("https://api.meetup.com/2/venues?&event_id={0}&key="+keys["meetup_key"].format(item['next_event']['id'])).json()
         item["lat"] = location_id['results'][0]['lat']
         item["lon"] = location_id['results'][0]['lon']
         item["address"] = location_id['results'][0]['address_1']
