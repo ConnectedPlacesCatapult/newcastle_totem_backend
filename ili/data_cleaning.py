@@ -232,18 +232,10 @@ gne_events = []
 print "Fetching gne pages"
 for page in range(1,10):
     driver.get("https://getnorth2018.com/things-to-do/events-search-results/?sf_paged={0}#search-results".format(page))
-    j = 0
-    for i in range(1,13):
-        while True:
-            try:
-                driver.execute_script("window.scrollTo(0, {0});".format(600 + j))
-            except Exception, e:
-                print str(e)
-                break
+    for i in range(1,20):
         elem = driver.find_elements_by_xpath('//*[@id="search-results"]/div[1]/div[{0}]/article/a/div'.format(i))
         if len(elem) > 0:
             gne_events.append(elem[0].text)
-        j = j+100
 
 driver.close()
 
