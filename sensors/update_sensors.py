@@ -49,184 +49,26 @@ AGG_RADIUS = 2000
 SOURCE_REMOTE = "Urban Observatory sensors distributed throughout Newcastle"
 SOURCE_LOCAL = "Urban Observatory sensors inside this totem"
 
-# Variable name translation from NCL naming scheme to frontend naming scheme
-# Hardcoded for now; should be linked to CMS (Sheets or alternative)
-VAR_DETAILS = {
-  "CO": {
-    "key": "co",
-    "label": "Carbon Monoxide level",
-    "taglines": [
-      "Tagline 1",
-      "Tagline 2"
-    ],
-    "description": "Description text"
-  },
-  "Humidity": {
-    "key": "humidity",
-    "label": "Humidity",
-    "taglines": [
-      "Tagline 1",
-      "Tagline 2"
-    ],
-    "description": "Description text"
-  },
-  "NO2": {
-    "key": "no2",
-    "label": "NO2 level",
-    "taglines": [
-      "Tagline 1",
-      "Tagline 2"
-    ],
-    "description": "Description text"
-  },
-  "O3": {
-    "key": "o3",
-    "label": "Ozone level",
-    "taglines": [
-      "Tagline 1",
-      "Tagline 2"
-    ],
-    "description": "Description text"
-  },
-  "PM10": {
-    "key": "pm10",
-    "label": "Particulate Matter level",
-    "taglines": [
-      "Tagline 1",
-      "Tagline 2"
-    ],
-    "description": "Description text"
-  },
-  "Solar Radiation": {
-    "key": "solar",
-    "label": "Solar Radiation",
-    "taglines": [
-      "Tagline 1",
-      "Tagline 2"
-    ],
-    "description": "Description text"
-  },
-  "Sound": {
-    "key": "sound",
-    "label": "Noise level",
-    "taglines": [
-      "Tagline 1",
-      "Tagline 2"
-    ],
-    "description": "Description text"
-  },
-  "Wind Direction": {
-    "key": "wind",
-    "label": "Wind Direction",
-    "taglines": [
-      "Tagline 1",
-      "Tagline 2"
-    ],
-    "description": "Description text"
-  }
-}
+### LOAD SENSOR DETAILS
+with open('sensor_details.json') as sensor_details:
+    SENSOR_DETAILS = json.load(sensor_details)
 
+#### LOAD TOTEM DETAILS
 
-#### TOTEM DETAILS - to be loaded from mongodb ideally
-# NOTE for now, hardcoded
+# Note: If no specific sensors are used, add an "other" entry in the
+# "remote" object in totem_details.json, listing all unaddressed vars
+# e.g.
+#
+# "remote: {
+#   "other": [
+#     "CO",
+#     "O2",
+#     "Humidity"
+#   ]
+# }
 
-#NEAREST
-#{u'Sound': u'new_new_emote_1173', u'CO': u'new_new_emote_1173', u'PM10': u'AURN_NCA3', u'Wind Direction': u'aq_monitor1056100', u'Humidity': u'new_new_emote_1173', u'Solar Radiation': u'King Gate Weather', u'O3': u'aq_monitor915', u'NO2': u'new_new_emote_1173'}
-
-#NEAREST
-#{u'Sound': u'new_new_emote_2601', u'CO': u'new_new_emote_2601', u'PM10': u'aq_mesh1918150', u'Wind Direction': u'eml_sensors3_164118', u'Humidity': u'eml_sensors3_164118', u'Solar Radiation': u'King Gate Weather', u'O3': u'aq_mesh1918150', u'NO2': u'new_new_emote_2601'}
-
-totems = []
-
-totems.append({
-  "id":1,
-  "lat":54.975194,
-  "lon":-1.592056,
-  "sensor_sources": {
-    "local": {
-      ## EXAMPLE ENTRY:
-      # "new_new_emote_2204": [
-      #   "Humidity",
-      #   "CO",
-      #   "NO2",
-      #   "Sound"
-      # ]
-    },
-    "remote": {
-      "AURN_NCA3": [
-        "PM10"
-      ],
-      "aq_monitor915": [
-        "O3"
-      ],
-      "aq_monitor1056100": [
-        "Wind Direction"
-      ],
-      "King%20Gate%20Weather": [
-        "Solar Radiation"
-      ],
-      "new_new_emote_1173": [
-        "CO",
-        "Sound",
-        "Humidity",
-        "NO2"
-      ]
-
-      ## OTHER should include all variables not covered by specific sensors
-      # "other": [
-      #   "Humidity",
-      #   "CO",
-      #   "NO2",
-      #   "Sound",
-      #   "Wind Direction",
-      #   "Solar Radiation",
-      #   "O3",
-      #   "PM10"
-      # ]
-    }
-  },
-});
-
-totems.append({
-  "id":2,
-  "lat":54.979988,
-  "lon":-1.611195,
-  "sensor_sources": {
-    "local": {
-    },
-    "remote": {
-      "new_new_emote_2601": [
-        "CO",
-        "NO2",
-        "Sound"
-      ],
-      "eml_sensors3_164118": [
-        "Humidity"
-      ],
-      "aq_mesh1918150": [
-        "PM10",
-        "O3"
-      ],
-      "King%20Gate%20Weather": [
-        "Solar Radiation"
-      ],
-      "eml_sensors3_164118": [
-        "Wind Direction"
-      ]
-
-      # "other": [
-      #   "Humidity",
-      #   "CO",
-      #   "NO2",
-      #   "Sound",
-      #   "Wind Direction",
-      #   "Solar Radiation",
-      #   "O3",
-      #   "PM10"
-      # ]
-    }
-  }
-});
+with open('../totem_details.json') as totem_details:
+    totems = json.load(totem_details)
 
 ################################################################################
 #### FUNCTIONS
@@ -428,7 +270,7 @@ for totem_id, totem in enumerate(totems, start=1):
                 for v in vars:
 
                     # Get the static details for this variable
-                    v_details = VAR_DETAILS[v]
+                    v_details = SENSOR_DETAILS[v]
 
                     var_out = {
                       "name": "data-" + v_details["key"],
@@ -482,7 +324,7 @@ for totem_id, totem in enumerate(totems, start=1):
                     for v in vars:
 
                         # Get the static details for this variable
-                        v_details = VAR_DETAILS[v]
+                        v_details = SENSOR_DETAILS[v]
 
                         var_out = {
                           "name": "data-" + v_details["key"],
