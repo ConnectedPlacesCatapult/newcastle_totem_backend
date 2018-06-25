@@ -12,9 +12,9 @@
   "darksky_key": "fcb90ddc5c96f448fae76b4a4f7dc04d",
 
   "boto3_access_key": "AKIAINRS6Y72NCDYTV3Q",
-  "boto3_secret_access_key":"'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",
+  "boto3_secret_access_key":"h4D7Y3uHhVQRHCGFSB54U9d2+gSr+vI+CPMlvJPH",
   "bucket_name":"newcastle.tech.totem",
 
-  "uo_api_key": "0jfaukx6vufu4lgprzcrj7ziq32sz6slhltxeqs3h84j8ik2x5fof57jo60tugc5mwj6sl2rpy2puqzgrqltq8h6cs",
+  "uo_api_key": "0jfaukx6vufu4lgprzcrj7ziq32sz6slhltxeqs3h84j8ik2x5fof57jo60tugc5mwj6sl2rpy2puqzgrqltq8h6cs"
 
 }
