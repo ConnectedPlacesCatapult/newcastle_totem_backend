@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import datetime
 import googlemaps
+import sys
 ##### Loading the data locally
 
 with open('foursquare.json') as json_file:
@@ -68,8 +69,6 @@ totem_location_2_lon = -1.611195
 chrome_opts = webdriver.ChromeOptions()
 chrome_opts.add_argument("--headless")
 chrome_opts.add_argument("--no-sandbox")
-#opts.add_argument("--no-sandbox")
-#opts = opts.to_capabilities()
 
 #sel_service = webdriver.chrome.service.Service("./chromedriver")
 #sel_service.start()
@@ -80,8 +79,6 @@ chrome_opts.add_argument("--no-sandbox")
 driver = webdriver.Chrome(chrome_options=chrome_opts)#, service_args=service_args, service_log_path=service_log_path)#, executable_path="./chromedriver")
 
 driver.get("https://www.facebook.com/pg/ouseburnvalley/events/?ref=page_internal")
-
-print "Got feed - processing"
 
 gmaps = googlemaps.Client(key=keys["gmaps_key"])
 
@@ -102,7 +99,6 @@ for i in fb_events:
         places['name'] = d[2]
 
         if d[4] == 'Ouseburn Valley':
-            print "3a"
             places['coordinates'] = [-1.592383, 54.974767]
             places['address'] = "Ouseburn Valley"
         else:
@@ -117,9 +113,9 @@ for i in fb_events:
             else:
                 places['address'] = geocode_result[0]['address_components'][1]['long_name'] +' '+ geocode_result[0]['address_components'][0]['short_name'] +' '+ geocode_result[0]['address_components'][6]['short_name']
 
-       
+
         places['source'] = 'facebook'
-        
+
         places['properties'] = [{'free' : 'For more info see https://www.facebook.com/pg/ouseburnvalley/events',
                                  'start' : datetime.strftime((datetime.strptime('{0} {1} 2018 {2}'.format(d[0],d[1],d[3].split()[1] ), '%b %d %Y %H:%M')),
                                     '%Y-%m-%dT%H:%M:%S'),
@@ -134,6 +130,7 @@ for i in fb_events:
         places_all.append(places)
     except Exception, e:
         print str(e)
+        sys.stdout.flush()
         pass
 
 ##### Great North Exhibition events
@@ -229,7 +226,6 @@ gne_locations = [{"name": "Outside Great North Children's Hospital",
 driver = webdriver.Chrome(chrome_options=chrome_opts)
 gne_events = []
 
-print "Fetching gne pages"
 for page in range(1,10):
     driver.get("https://getnorth2018.com/things-to-do/events-search-results/?sf_paged={0}#search-results".format(page))
     for i in range(1,20):
@@ -238,8 +234,6 @@ for page in range(1,10):
             gne_events.append(elem[0].text)
 
 driver.close()
-
-print "Parsing events"
 
 for i in gne_events:
     ### split th web element by new line
@@ -272,11 +266,10 @@ for i in gne_events:
         else:
             pass
     except Exception, e:
-        print "Failed on event parse"
         print str(e)
+        sys.stdout.flush()
         pass
 
-print "Parsing meetup data"
 ##### Meetup cleaning and adding poi properties.
 for i in data_meetup:
     places = {}
@@ -299,7 +292,6 @@ for i in data_meetup:
         if str(e) == 'KeyError':
             pass
 
-print "Parsing Eventbrite..."
 ##### Eventbrite cleaning and adding poi properties. Need to call the API again for the catgories.
 eventbrite_categories = Eventbrite(keys["eventbrite_key"]).get_categories()['categories']
 for i in filter(lambda d: d['category_id'] != None, data_eventbrite):
@@ -323,7 +315,6 @@ for i in filter(lambda d: d['category_id'] != None, data_eventbrite):
 places_all = filter(lambda d: (d['category'] == 'event' and d['address'] != None), places_all)
 
 ##### Foursquare cleaning and adding poi properties
-print "Parsing foursquare..."
 for i in range(len(data_fs)):
     places = {}
     try:
@@ -387,6 +378,7 @@ for i in range(len(data_fs)):
 
     except KeyError, e:
         print str(e)
+        sys.stdout.flush()
         pass
 
 
@@ -651,7 +643,6 @@ places_all = filter(lambda d: 'Costa' not in d['name'], places_all)
 places_all = filter(lambda d: 'Pret' not in d['name'], places_all)
 places_all = filter(lambda d: 'Nero' not in d['name'], places_all)
 
-print "Outputting file"
 ## Saving cleaned data to a file
 with open('places_all.json', 'w') as outfile:
     json.dump(places_all, outfile)

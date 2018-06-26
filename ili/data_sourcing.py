@@ -3,6 +3,7 @@ import json, requests
 import numpy as np
 from eventbrite import Eventbrite
 from datetime import datetime, time
+import sys
 
 ## Load keys from shared location
 with open('../keys.json') as keys:
@@ -53,10 +54,6 @@ for i in range(25*8):
 
 ## Foursquare calls
 url = 'https://api.foursquare.com/v2/venues/explore'
-
-print "Foursquare stuff:"
-print keys["fs_client_id"]
-print keys["fs_client_secret"]
 
 responses = []
 for i in coords:
@@ -123,6 +120,7 @@ for item in events:
         item["address"] = location_id['results'][0]['address_1']
     except Exception, e:
         print str(e)
+        sys.stdout.flush()
         item["address"] = None
 
 ## Save data to a file so they can be referenced later
