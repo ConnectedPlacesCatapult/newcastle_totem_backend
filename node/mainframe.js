@@ -258,7 +258,7 @@ function sourceILI(retry=0) {
 
 // Clean data - runs after source data has successfully returned
 function cleanILI(retry=0) {
-  makeLogEntry("Sourcing ILI content - attempt " + (retry+1))
+  makeLogEntry("Cleaning ILI content - attempt " + (retry+1))
 
   // Call the function
   var script = spawn('python', ['../ili/data_cleaning.py'], {cwd: '../ili'});
