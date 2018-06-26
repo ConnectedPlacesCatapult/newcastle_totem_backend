@@ -35,7 +35,7 @@ function sourceSensors(retry=0) {
   makeLogEntry("Sourcing sensor content - attempt " + retry)
 
   // Call the function
-  var script = spawn('python', ['../sensors/fetch_content.py']);
+  var script = spawn('python', ['../sensors/fetch_content.py'], {cwd: '../sensors'});
 
   var complete = false;
 
@@ -114,7 +114,7 @@ function updateSensors(retry=0) {
   makeLogEntry("Updating sensors - attempt " + retry)
 
   // run update_sensors
-  var updateProg = spawn('python', ['../sensors/update_sensors.py']);
+  var script = spawn('python', ['../sensors/update_sensors.py'], {cwd: '../sensors'});
 
   // Completion flag to enforce synchronous execution; may be superfluous
   var complete = false;
@@ -128,21 +128,21 @@ function updateSensors(retry=0) {
   }
 
   // stdout should log warnings
-  updateProg.stdout.on('data', function(data) {
+  script.stdout.on('data', function(data) {
     if(!complete) {
       log.warnings.push(data.toString());
     }
   });
 
   // stderr logs errors
-  updateProg.stderr.on('data', function(data) {
+  script.stderr.on('data', function(data) {
     if(!complete) {
       log.errors.push(data.toString());
     }
   });
 
   // Handle exit
-  updateProg.on("exit", function(code, sig) {
+  script.on("exit", function(code, sig) {
     complete = true;
 
     if(code == 0) {
@@ -187,7 +187,7 @@ function sourceILI(retry=0) {
   makeLogEntry("Sourcing ILI content - attempt " + retry)
 
   // Call the function
-  var script = spawn('python', ['../ili/data_sourcing.py']);
+  var script = spawn('python', ['../ili/data_sourcing.py'], {cwd: '../ili'});
 
   var complete = false;
 
@@ -261,7 +261,7 @@ function cleanILI(retry=0) {
   makeLogEntry("Sourcing ILI content - attempt " + retry)
 
   // Call the function
-  var script = spawn('python', ['../ili/data_cleaning.py']);
+  var script = spawn('python', ['../ili/data_cleaning.py'], {cwd: '../ili'});
 
   var complete = false;
 
@@ -329,7 +329,7 @@ function updateILI(retry=0) {
   makeLogEntry("Updating ILI content - attempt " + retry)
 
   // Call the function
-  var script = spawn('python', ['../ili/data_call.py']);
+  var script = spawn('python', ['../ili/data_call.py'], {cwd: '../ili'});
 
   var complete = false;
 
