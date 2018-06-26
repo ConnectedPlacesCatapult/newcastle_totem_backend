@@ -329,7 +329,8 @@ for totem_id, totem in enumerate(totems, start=1):
                         var_out = {
                           "name": "data-" + v_details["key"],
                           "label": v_details["label"],
-                          "tagline": random.choice(v_details["taglines"])
+                          "tagline": random.choice(v_details["taglines"]),
+                          "description": v_details["description"]
                         }
 
                         # Locality
