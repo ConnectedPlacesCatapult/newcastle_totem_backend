@@ -112,7 +112,8 @@ with open('eventbrite_events.json', 'wb') as outfile:
 r = requests.get("https://api.meetup.com/find/groups?lat=54.967155&lon=-1.613736&radius=5&order=members&key="+keys["meetup_key"])
 
 events = r.json()
-for item in events:
+for k in events.keys():
+    item = events[k]
     try:
         location_id = requests.get("https://api.meetup.com/2/venues?&event_id={0}&key="+keys["meetup_key"].format(item['next_event']['id'])).json()
         item["lat"] = location_id['results'][0]['lat']
@@ -121,8 +122,11 @@ for item in events:
     except Exception, e:
         print str(e)
         sys.stdout.flush()
-        item["address"] = None
+        del events[k]
+        
 
 ## Save data to a file so they can be referenced later
 with open('meetup_events.json', 'wb') as outfile:
     json.dump(events, outfile)
+
+#print "Done"
