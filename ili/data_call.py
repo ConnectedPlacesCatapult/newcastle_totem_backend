@@ -659,7 +659,9 @@ elif recommendation[0]['category'] == 'food_drinks':
         action_msg = action_msg + "_" + food[random.sample(xrange(len(food)), 1)[0]] + ":_" + recommendation[0]['name']
 
 print action_msg
-#action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
+
+## Cropping the action msg
+action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
 recommendation[0]['action_msg'] = action_msg
 recommendation[0]['totem_coords'] = [totem_location_1_lon,totem_location_1_lat]
 
