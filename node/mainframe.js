@@ -94,6 +94,8 @@ function sourceSensors(retry=0) {
         // Set timer to try next time
         setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour))
 
+        console.log(log);
+
         // Done for now - refresh sensors
         updateSensors();
 
@@ -165,11 +167,13 @@ function updateSensors(retry=0) {
 
         makeLogEntry("Unable to update sensor content", "F")
 
+        console.log(log);
+
         // Set timer to try next time
         setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
       } else {
         // Wait 30 secs and retry
-        makeLogEntry("Failed - retrying...", "F")
+        makeLogEntry("Sensor update failed - retrying...", "F")
         setTimeout(function() { updateSensors(++retry) }, 30000)
       }
     }
@@ -238,11 +242,14 @@ function sourceILI(retry=0) {
         // Set timer to try next time
         setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour))
 
+        // TODO REMOVE
+        console.log(log);
+
         // Done for now - update ILI content with existing static data
         updateILI()
       } else {
         // Wait 10 secs and retry
-        makeLogEntry("Failed - retrying...", "F")
+        makeLogEntry("Failed to source ILI content - retrying...", "F")
         setTimeout(function() { sourceILI(++retry) }, 10000)
       }
     }
@@ -304,10 +311,13 @@ function cleanILI(retry=0) {
         // TODO
         makeLogEntry("Unable to clean ILI content", "F")
         // Done for now - update ILI content with existing static data
+
+        console.log(log);
+
         updateILI()
       } else {
         // Wait 10 secs and retry
-        makeLogEntry("Failed - retrying...", "F")
+        makeLogEntry("Failed to clean ILI content - retrying...", "F")
         setTimeout(function() { cleanILI(++retry) }, 10000)
       }
     }
@@ -368,6 +378,9 @@ function updateILI(retry=0) {
         // Out of retries - raise alert with admin
         // TODO
         makeLogEntry("Unable to update ILI content", "F")
+
+        console.log(log);
+
         // Done for now - attempt to update next time
         setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
       } else {
