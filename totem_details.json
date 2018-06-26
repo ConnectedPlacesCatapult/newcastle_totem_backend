@@ -1,0 +1,60 @@
+[
+  {
+    "id":1,
+    "lat":54.975194,
+    "lon":-1.592056,
+    "sensor_sources": {
+      "local": {
+      },
+      "remote": {
+        "AURN_NCA3": [
+          "PM10"
+        ],
+        "aq_monitor915": [
+          "O3"
+        ],
+        "aq_monitor1056100": [
+          "Wind Direction"
+        ],
+        "King%20Gate%20Weather": [
+          "Solar Radiation"
+        ],
+        "new_new_emote_1173": [
+          "CO",
+          "Sound",
+          "Humidity",
+          "NO2"
+        ]
+      }
+    }
+  },
+  {
+    "id":2,
+    "lat":54.979988,
+    "lon":-1.611195,
+    "sensor_sources": {
+      "local": {
+      },
+      "remote": {
+        "new_new_emote_2601": [
+          "CO",
+          "NO2",
+          "Sound"
+        ],
+        "eml_sensors3_164118": [
+          "Humidity"
+        ],
+        "aq_mesh1918150": [
+          "PM10",
+          "O3"
+        ],
+        "King%20Gate%20Weather": [
+          "Solar Radiation"
+        ],
+        "eml_sensors3_164118": [
+          "Wind Direction"
+        ]
+      }
+    }
+  }
+]
