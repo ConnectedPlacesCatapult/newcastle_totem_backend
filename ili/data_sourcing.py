@@ -112,21 +112,29 @@ with open('eventbrite_events.json', 'wb') as outfile:
 r = requests.get("https://api.meetup.com/find/groups?lat=54.967155&lon=-1.613736&radius=5&order=members&key="+keys["meetup_key"])
 
 events = r.json()
-for k in events.keys():
-    item = events[k]
-    try:
-        location_id = requests.get("https://api.meetup.com/2/venues?&event_id={0}&key="+keys["meetup_key"].format(item['next_event']['id'])).json()
-        item["lat"] = location_id['results'][0]['lat']
-        item["lon"] = location_id['results'][0]['lon']
-        item["address"] = location_id['results'][0]['address_1']
-    except Exception, e:
-        print str(e)
-        sys.stdout.flush()
-        del events[k]
+
+if type(events) is dict and 'errors' in events:
+    # Need to skip
+    print "Error fetching Meetup events"
+    print events['errors']
+    sys.stdout.flush()
+else:
+    for k in range(0, len(events)):
+    	item = events[k]
+        try:
+            location_id = requests.get("https://api.meetup.com/2/venues?&event_id={0}&key="+keys["meetup_key"].format(item['next_event']['id'])).json()
+            item["lat"] = location_id['results'][0]['lat']
+            item["lon"] = location_id['results'][0]['lon']
+            item["address"] = location_id['results'][0]['address_1']
+        except Exception, e:
+            print str(e)
+            sys.stdout.flush()
+            del events[k]
+            k -= 1
         
 
 ## Save data to a file so they can be referenced later
-with open('meetup_events.json', 'wb') as outfile:
-    json.dump(events, outfile)
+    with open('meetup_events.json', 'wb') as outfile:
+        json.dump(events, outfile)
 
-#print "Done"
+
