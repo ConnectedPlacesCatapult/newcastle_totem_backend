@@ -538,6 +538,10 @@ if not matching_flag:
     temp['coordinates'] = recommendation[0]['coordinates']
     temp['name'] = recommendation[0]['name']
     temp['subcategory'] = recommendation[0]['properties'][0]['subcategory']
+    ## Adding the remaining attributes if the recommendation is an event
+    if temp['category'] == 'event':
+        temp['start'] = recommendation[0]['properties'][0]['start']
+        temp['free'] = recommendation[0]['properties'][0]['free']
     ## replace the first amenities entry with the recommendation
     recommendation[0]['properties'][0]['amenities'][0] = temp
 
