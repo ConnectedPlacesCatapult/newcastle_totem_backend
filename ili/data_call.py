@@ -14,6 +14,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 import boto3
 from botocore.client import Config
+import sys
 
 ## Totem location. This has to be variable. For now it is hardcoced. totem_location_2 is a dummy variable that doesn't influence the results
 totem_lat = 54.972352
@@ -39,6 +40,7 @@ def call_google_places(totem_location_lat,totem_location_lon, subcategory, jitte
 
     if subcategory == 'bar' or subcategory == 'pub':
         print "Google backoff: Adding pubs/bars",
+        sys.stdout.flush()
         nearby_result_bar = gmaps.places_nearby(location=[totem_location_lat, totem_location_lon],radius = jitter,
                                            open_now=True, type='bar')
         nearby_result_pub = gmaps.places_nearby(location=[totem_location_lat, totem_location_lon],radius = jitter,
@@ -48,11 +50,13 @@ def call_google_places(totem_location_lat,totem_location_lon, subcategory, jitte
 
     elif subcategory == 'cafe':
     	print "Google backoff: Adding cafes",
+        sys.stdout.flush()
         nearby_result_cafe = gmaps.places_nearby(location=[totem_location_lat, totem_location_lon],radius = jitter,
                                            open_now=True, type='cafe')
         places.extend(nearby_result_cafe['results'])
     elif subcategory == 'restaurant':
     	print "Google backoff: Adding restaurants",
+        sys.stdout.flush()
         nearby_result_restaurant = gmaps.places_nearby(location=[totem_location_lat, totem_location_lon],radius = jitter,
                                            open_now=True, type='restaurant')
         places.extend(nearby_result_restaurant['results'])
@@ -194,7 +198,7 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
 
     ### flip coin for events
     flip_coin = flip(0.6)
-    print flip_coin
+    #print flip_coin
     if flip_coin == 1:
         events = filter(lambda d: (datetime.strptime(d['properties'][0]['start'],
                                        '%Y-%m-%dT%H:%M:%S').day == datetime.now().day and (datetime.strptime(d['properties'][0]['start'],
@@ -213,7 +217,7 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
 
         # check for clear weather --> send to park
         if "clear" in clear:
-            print "its clear!"
+            #print "its clear!"
 
             recommendation = random.sample(filter(lambda d: d['category'] in 'tranquility',
                                      get_closest('tranquility', places_all, 1.4 * 60 * jitter)), 1)
@@ -234,12 +238,12 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
         else:
             # check for rain --> send to cafe
             if rain_probability > 0.5:
-                print "its raining"
+                #print "its raining"
                 data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories,
                                      get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
 
                 if not data:
-                    print subcategories
+                    #print subcategories
                     data = call_google_places(totem_lat, totem_lon, subcategories, 1.4 * 60 * jitter)
                     data.extend(get_closest(extended_categories,
                                places_all, 1.4 * 60 * jitter))
@@ -264,7 +268,7 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
                 recommendation[0]['properties'][0]['route_direct'] = polyline
             # check for rain and high temperature --> pick randomly from cafe or tranquillity
             elif rain_probability < 0.5 and temperature > 0.5:
-                print "its hot!"
+                #print "its hot!"
 
                 data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories[0],
                      get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
@@ -297,7 +301,7 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
 
             # check for rain and low temperature --> send to cafe or culture or attractions
             elif rain_probability < 0.5 and temperature < 0.5:
-                print "its cold!"
+                #print "its cold!"
                 data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories[0],
                                      get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
 
@@ -409,7 +413,7 @@ try:
     for file in os.listdir("~/information_local_influencer"):
         if "recommendation" in file:
             with open(os.path.join("~/information_local_influencer", file)) as recommendation:
-                print "Filtering: ", recommendation[0]['name']
+                #print "Filtering: ", recommendation[0]['name']
                 places_all = filter(lambda d: d['name'] != recommendation[0]['name'], places_all)
 except Exception, e:
     pass
@@ -562,7 +566,7 @@ recommendation[0]['properties'][0]['amenities'].extend(filter(lambda d: d['categ
 # Connect to google sheet
 scope = ['https://spreadsheets.google.com/feeds',
         'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name('../client_secret.json', scope)
 client = gspread.authorize(creds)
 
 # Find a workbook by name and open the first sheet
@@ -658,16 +662,21 @@ elif recommendation[0]['category'] == 'food_drinks':
     else:
         action_msg = action_msg + "_" + food[random.sample(xrange(len(food)), 1)[0]] + ":_" + recommendation[0]['name']
 
+<<<<<<< HEAD
 print action_msg
 
 ## Cropping the action msg
 action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
+=======
+#print action_msg
+#action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
+>>>>>>> 2856f460738d0fada00594d8b5e8634d99fcf651
 recommendation[0]['action_msg'] = action_msg
 recommendation[0]['totem_coords'] = [totem_location_1_lon,totem_location_1_lat]
 
 ## Saving recommendation for further checking and uploading to s3
 uploading_date = datetime.today()
-print datetime.today()
+#print datetime.today()
 with open('recommendation-totem-1.json', 'w') as outfile:
     json.dump(recommendation, outfile)
 
@@ -687,5 +696,3 @@ s3 = boto3.resource(
 s3.Bucket(BUCKET_NAME).upload_file('recommendation-totem-1.json',
                                    'recommendation-totem-1.json', ExtraArgs={'ContentType': "application/json",
                                                                                                 'ACL':'public-read'})
-
-print('recommendation uploaded')
