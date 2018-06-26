@@ -32,7 +32,7 @@ function refreshAll() {
 // Fetches content for sensors, i.e. descriptions, taglines, and labels
 function sourceSensors(retry=0) {
 
-  makeLogEntry("Sourcing sensor content - attempt " + retry)
+  makeLogEntry("Sourcing sensor content - attempt " + (retry+1))
 
   // Call the function
   var script = spawn('python', ['../sensors/fetch_content.py'], {cwd: '../sensors'});
@@ -111,7 +111,7 @@ function sourceSensors(retry=0) {
 // Update sensors - should be called every 10 minutes
 function updateSensors(retry=0) {
 
-  makeLogEntry("Updating sensors - attempt " + retry)
+  makeLogEntry("Updating sensors - attempt " + (retry+1))
 
   // run update_sensors
   var script = spawn('python', ['../sensors/update_sensors.py'], {cwd: '../sensors'});
@@ -184,7 +184,7 @@ function updateSensors(retry=0) {
 
 // Source data - runs every day at 9am
 function sourceILI(retry=0) {
-  makeLogEntry("Sourcing ILI content - attempt " + retry)
+  makeLogEntry("Sourcing ILI content - attempt " + (retry+1))
 
   // Call the function
   var script = spawn('python', ['../ili/data_sourcing.py'], {cwd: '../ili'});
@@ -258,7 +258,7 @@ function sourceILI(retry=0) {
 
 // Clean data - runs after source data has successfully returned
 function cleanILI(retry=0) {
-  makeLogEntry("Sourcing ILI content - attempt " + retry)
+  makeLogEntry("Sourcing ILI content - attempt " + (retry+1))
 
   // Call the function
   var script = spawn('python', ['../ili/data_cleaning.py'], {cwd: '../ili'});
@@ -326,7 +326,7 @@ function cleanILI(retry=0) {
 
 // Call data - runs every 15 minutes
 function updateILI(retry=0) {
-  makeLogEntry("Updating ILI content - attempt " + retry)
+  makeLogEntry("Updating ILI content - attempt " + (retry+1))
 
   // Call the function
   var script = spawn('python', ['../ili/data_call.py'], {cwd: '../ili'});
