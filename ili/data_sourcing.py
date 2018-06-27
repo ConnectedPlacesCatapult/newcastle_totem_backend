@@ -131,10 +131,8 @@ else:
             sys.stdout.flush()
             events.remove(item)
             #k -= 1
-        
+
 
 ## Save data to a file so they can be referenced later
     with open('meetup_events.json', 'wb') as outfile:
         json.dump(events, outfile)
-
-
