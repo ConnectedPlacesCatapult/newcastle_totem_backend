@@ -7,6 +7,8 @@ var util = require('util');
 // INIT
 const config = JSON.parse(fs.readFileSync('mainframe_config.json', 'utf8'));
 const totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
+// Logs new file monthly
+const logMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
 
 var debug = false;
 if(process.argv.includes("debug")) {
@@ -451,8 +453,6 @@ function getMillisecondsTilMinute(minuteInterval) {
   return (minsToInterval * 60000);
 }
 
-// Logs new file monthly
-const logMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
 function makeLogEntry(logText, pre="-") {
 
   var d = new Date();
