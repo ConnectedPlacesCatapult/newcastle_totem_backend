@@ -477,6 +477,8 @@ function makeLogEntry(logText, pre="-") {
     console.log(contents);
   }
 
+  contents += "\n"
+
   fs.appendFile("logs/"+fName, contents, function(err) {
     if(err) {
       console.log("Error writing message log: " + err);
