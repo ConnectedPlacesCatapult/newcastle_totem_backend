@@ -2,17 +2,23 @@ const express = require('express')
 const app = express()
 const { spawn } = require('child_process');
 var fs = require('fs');
+var util = require('util');
 
 // INIT
 const config = JSON.parse(fs.readFileSync('mainframe_config.json', 'utf8'));
 const totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
+
+var debug = false;
+if(process.argv.includes("debug")) {
+  debug = true;
+}
 
 makeLogEntry(" *** RESTARTING MAINFRAME *** ")
 
 // If the 'init' command is given, initialise with a content refresh
 // Else, set the timers to update as normal
 
-if(process.argv.length > 2 && process.argv[2] == "init") {
+if(process.argv.includes("init")) {
   makeLogEntry("Init command set - refreshing all content");
   refreshAll();
 } else {
@@ -445,14 +451,16 @@ function getMillisecondsTilMinute(minuteInterval) {
   return (minsToInterval * 60000);
 }
 
-function makeLogEntry(log, pre="-") {
+// Logs new file monthly
+const logMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
+function makeLogEntry(logText, pre="-") {
 
   var d = new Date();
 
   var day = d.getDate();
   if(day < 10) { day = "0" + day }
 
-  var month = d.getMonth();
+  var month = d.getMonth()+1;
   if(month < 10) { month = "0" + month }
 
   var hour = d.getHours();
@@ -461,7 +469,20 @@ function makeLogEntry(log, pre="-") {
   var min = d.getMinutes();
   if(min < 10) { min = "0" + min }
 
-  console.log(day + "/" + month + " " + hour + ":" + min + " " + pre + " " + log)
+  var fName = logMonths[d.getMonth()] + "-" + d.getFullYear() + ".log"
+
+  var contents = day+"/"+month+" "+hour+":"+min+" "+pre+" "+logText;
+
+  if(debug) {
+    console.log(contents);
+  }
+
+  fs.appendFile("logs/"+fName, contents, function(err) {
+    if(err) {
+      console.log("Error writing message log: " + err);
+      return;
+    }
+  });
 
 }
 
