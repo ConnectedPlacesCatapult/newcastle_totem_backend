@@ -119,8 +119,8 @@ if type(events) is dict and 'errors' in events:
     print events['errors']
     sys.stdout.flush()
 else:
-    for k in range(0, len(events)):
-    	item = events[k]
+    for item in list(events):
+    	#item = events[k]
         try:
             location_id = requests.get("https://api.meetup.com/2/venues?&event_id={0}&key="+keys["meetup_key"].format(item['next_event']['id'])).json()
             item["lat"] = location_id['results'][0]['lat']
@@ -129,8 +129,8 @@ else:
         except Exception, e:
             print str(e)
             sys.stdout.flush()
-            del events[k]
-            k -= 1
+            events.remove(item)
+            #k -= 1
         
 
 ## Save data to a file so they can be referenced later

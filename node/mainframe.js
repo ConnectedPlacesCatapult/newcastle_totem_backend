@@ -9,11 +9,22 @@ const totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
 
 makeLogEntry(" *** RESTARTING MAINFRAME *** ")
 
-refreshAll();
+// If the 'init' command is given, initialise with a content refresh
+// Else, set the timers to update as normal
 
-// Flags for triggering inital updates following data sourcing
-var initSensors = true;
-var initILI = true;
+if(process.argv.length > 2 && process.argv[2] == "init") {
+  makeLogEntry("Init command set - refreshing all content");
+  refreshAll();
+} else {
+  // Set timers for regular updates
+  makeLogEntry("No init command given; setting timers for regular updates")
+  setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
+  setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
+
+  // Set daily downloads
+  setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
+  setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
+}
 
 // Refreshses all content by sourcing, cleaning, and uploading updates
 function refreshAll() {
