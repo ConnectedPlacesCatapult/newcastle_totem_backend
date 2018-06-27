@@ -213,7 +213,7 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
 
     # If there are no events starting one hours from now
     if not events:
-        print 'no events'
+        #print 'no events'
 
         # check for clear weather --> send to park
         if "clear" in clear:

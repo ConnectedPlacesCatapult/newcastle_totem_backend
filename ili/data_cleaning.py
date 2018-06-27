@@ -87,7 +87,7 @@ for i in xrange(2,8):
     s = driver.find_elements_by_xpath('//*[@id="upcoming_events_card"]/div/div[{0}]/table/tbody'.format(str(i)))
     fb_events.append(s[0].text)
 
-driver.close()
+#driver.close()
 
 for i in fb_events:
     ### split th web element by new line
@@ -223,7 +223,7 @@ gne_locations = [{"name": "Outside Great North Children's Hospital",
                  "coordinates": [-1.600832, 54.962247]}
                 ]
 
-driver = webdriver.Chrome(chrome_options=chrome_opts)
+#driver = webdriver.Chrome(chrome_options=chrome_opts)
 gne_events = []
 
 for page in range(1,10):
@@ -233,7 +233,7 @@ for page in range(1,10):
         if len(elem) > 0:
             gne_events.append(elem[0].text)
 
-driver.close()
+driver.quit()
 
 for i in gne_events:
     ### split th web element by new line
