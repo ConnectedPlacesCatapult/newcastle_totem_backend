@@ -202,8 +202,8 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
     if flip_coin == 1:
         events = filter(lambda d: (datetime.strptime(d['properties'][0]['start'],
                                        '%Y-%m-%dT%H:%M:%S').day == datetime.now().day and (datetime.strptime(d['properties'][0]['start'],
-                                       '%Y-%m-%dT%H:%M:%S').hour  > now - 2 and datetime.strptime(d['properties'][0]['start'],
-                                       '%Y-%m-%dT%H:%M:%S').hour < now + 2) ),
+                                       '%Y-%m-%dT%H:%M:%S').hour  - now <= 2 and datetime.strptime(d['properties'][0]['start'],
+                                       '%Y-%m-%dT%H:%M:%S').hour - now > 0) ),
                         get_closest('event', places_all, 1.4 * 60 * jitter))
 
 
@@ -669,7 +669,7 @@ elif recommendation[0]['category'] == 'food_drinks':
 
 ## Cropping the action msg
 #action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
-action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[3]
+action_msg = random.choice(action_msg.split('_')[0:3]) + '_' + action_msg.split('_')[3]
 #print action_msg
 
 recommendation[0]['action_msg'] = action_msg
