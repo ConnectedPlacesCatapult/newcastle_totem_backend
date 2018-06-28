@@ -1,3 +1,7 @@
+const express = require('express')
+const app = express()
+const bodyParser = require('body-parser')
+
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 
@@ -28,6 +32,27 @@ function mongoInsertOne(db, collection, data, callback) {
 }
 
 
-var d = {content:"works"}
+//// ANALYTICS CALLS
 
-mongoExec(mongoInsertOne, "log_ili", d);
+app.use( bodyParser.json() );
+app.use( bodyParser.urlencoded({ extended: true }));
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+app.post('/analytics', function(req, res) {
+  console.log("Got a post");
+  console.log(req.body);
+  var totem_id = req.body.id;
+  var test = req.body.test;
+
+  res.send(totem_id + ", " + test);
+});
+
+// Testing
+// app.get('/', (req, res) => res.send('Hello Remote!'))
+
+app.listen(3000, () => console.log('Listening on port 3000'))
