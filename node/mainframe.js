@@ -23,6 +23,8 @@ makeLogEntry(" *** RESTARTING MAINFRAME *** ")
 if(process.argv.includes("init")) {
   makeLogEntry("Init command set - refreshing all content");
   refreshAll();
+  //updateSensors();
+  //updateILI();
 } else {
   // Set timers for regular updates
   makeLogEntry("No init command given; setting timers for regular updates")
@@ -398,7 +400,7 @@ function updateILI(retry=0) {
         // TODO
         makeLogEntry("Unable to update ILI content", "F")
 
-        console.log(log);
+        makeLogEntry(JSON.stringify(log));
 
         // Done for now - attempt to update next time
         setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
