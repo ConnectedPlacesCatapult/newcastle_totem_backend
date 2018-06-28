@@ -668,7 +668,8 @@ elif recommendation[0]['category'] == 'food_drinks':
 
 
 ## Cropping the action msg
-action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
+#action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
+action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[3]
 #print action_msg
 
 recommendation[0]['action_msg'] = action_msg
