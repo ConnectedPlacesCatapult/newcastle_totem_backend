@@ -463,7 +463,7 @@ for i in data_benches['features']:
         places['coordinates'] = i['geometry']['coordinates']
 
     if 'name' in i['properties'].keys():
-        places['name'] =  i['properties']['name']
+        places['name'] =  i['properties']['designation']
     else:
         places['name'] =  'Benches'
 
