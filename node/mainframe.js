@@ -11,6 +11,7 @@ var util = require('util');
 // INIT
 const config = JSON.parse(fs.readFileSync('mainframe_config.json', 'utf8'));
 const totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
+
 // Logs new file monthly
 const logMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
 
@@ -76,8 +77,8 @@ function sourceSensors(retry=0) {
   var complete = false;
 
   var log = {
-    type: "source",
     timestamp: Date.now(),
+    attempt: (retry+1),
     success: false,
     errors: [],
     warnings: []
@@ -106,7 +107,7 @@ function sourceSensors(retry=0) {
     }
 
     // Save the log
-    // TODO - sensorlog table - enter that we sourced content
+    mongoExec(mongoInsertOne, "logs_sensors_source", log)
 
     // Set the timer for next time
     if(log.success) {
@@ -157,8 +158,8 @@ function updateSensors(retry=0) {
   var complete = false;
 
   var log = {
-    type: "update",
     timestamp: Date.now(),
+    attempts: (retry+1),
     success: false,
     errors: [],
     warnings: []
@@ -189,7 +190,7 @@ function updateSensors(retry=0) {
     }
 
     // Save the log
-    // TODO - sensorlog table - enter that we updated readings
+    mongoExec(mongoInsertOne, "logs_sensors_update", log)
 
     // Set the timer for next time
     if(log.success) {
@@ -235,8 +236,8 @@ function sourceILI(retry=0) {
   var complete = false;
 
   var log = {
-    type: "source",
     timestamp: Date.now(),
+    attempt: (retry+1),
     success: false,
     errors: [],
     warnings: []
@@ -265,7 +266,7 @@ function sourceILI(retry=0) {
     }
 
     // Save the log
-    // TODO - sensorlog table - enter that we sourced content
+    mongoExec(mongoInsertOne, "logs_ili_source", log)
 
     // Set the timer for next time
     if(log.success) {
@@ -309,8 +310,8 @@ function cleanILI(retry=0) {
   var complete = false;
 
   var log = {
-    type: "clean",
     timestamp: Date.now(),
+    attempt: (retry+1),
     success: false,
     errors: [],
     warnings: []
@@ -339,7 +340,7 @@ function cleanILI(retry=0) {
     }
 
     // Save the log
-    // TODO - sensorlog table - enter that we sourced content
+    mongoExec(mongoInsertOne, "logs_ili_clean", log)
 
     // Set the timer for next time
     if(log.success) {
@@ -377,8 +378,8 @@ function updateILI(retry=0) {
   var complete = false;
 
   var log = {
-    type: "update",
     timestamp: Date.now(),
+    attempt: (retry+1),
     success: false,
     errors: [],
     warnings: []
@@ -407,7 +408,7 @@ function updateILI(retry=0) {
     }
 
     // Save the log
-    // TODO - sensorlog table - enter that we sourced content
+    mongoExec(mongoInsertOne, "logs_ili_update", log)
 
     // Set the timer for next time
     if(log.success) {
@@ -512,6 +513,7 @@ function makeLogEntry(logText, pre="-") {
 }
 
 //// MONGO CONNECTION
+// TODO: Log mongo errors on the mainframe!
 
 const mongoURL = 'mongodb://localhost:27017';
 const mongoName = 'totem_backend';
@@ -519,8 +521,13 @@ const mongoName = 'totem_backend';
 function mongoExec(method, collection, data) {
   MongoClient.connect(mongoURL, function(err, client) {
 
-    assert.equal(null, err);
-    console.log("Connected to Mongo server")
+    if(err) {
+      makeLogEntry("MONGO CONNECTION FAILED", "F")
+      makeLogEntry(JSON.stringify(err), "F");
+      // TODO LOG ERROR FOR MAINFRAME
+      return;
+    }
+
     const db = client.db(mongoName)
 
     method(db, collection, data, function() {
@@ -530,24 +537,32 @@ function mongoExec(method, collection, data) {
   });
 }
 
-function mongoInsertOne(db, collection, data, callback) {
+function mongoInsertOne(db, collection, dataObj, callback) {
   const col = db.collection(collection);
-  col.insert(data, function(err, res) {
-    assert.equal(err, null);
-    console.log("Successfully inserted");
+  col.insert(dataObj, function(err, res) {
+    if(err) {
+      makeLogEntry("mongoInsertOne failed", "F")
+      makeLogEntry(JSON.stringify(err), "F");
+      // TODO raise status alert
+      return;
+    }
     callback(res);
   });
 }
 
-// function mongoInsertMany(table, obj) {
-//   MongoClient.connect(mongoURL, function(err, client) {
-//     assert.equal(null, err);
-//     console.log("Connected to Mongo server")
-//     const db = client.db(mongoName)
-//
-//     client.close();
-//   })
-// }
+function mongoInsertMany(db, collection, dataArray, callback) {
+  const col = db.collection(collection);
+  col.insertMany(dataArray, function(err, res) {
+    if(err) {
+      makeLogEntry("mongoInsertMany failed", "F")
+      makeLogEntry(JSON.stringify(err), "F");
+      // TODO raise status alert
+      return;
+    }
+    callback(res);
+  });
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
