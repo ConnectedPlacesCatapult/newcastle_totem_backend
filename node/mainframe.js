@@ -1,6 +1,10 @@
 const express = require('express')
 const app = express()
 const { spawn } = require('child_process');
+
+const MongoClient = require('mongodb').MongoClient;
+const assert = require('assert');
+
 var fs = require('fs');
 var util = require('util');
 
@@ -20,6 +24,13 @@ makeLogEntry(" *** RESTARTING MAINFRAME *** ")
 // If the 'init' command is given, initialise with a content refresh
 // Else, set the timers to update as normal
 
+// TIMERS
+var updateSensorsTimer = null;
+var sourceSensorsTimer = null;
+var updateILITimer = null;
+var sourceILITimer = null;
+var cleanILITimer = null;
+
 if(process.argv.includes("init")) {
   makeLogEntry("Init command set - refreshing all content");
   refreshAll();
@@ -28,12 +39,12 @@ if(process.argv.includes("init")) {
 } else {
   // Set timers for regular updates
   makeLogEntry("No init command given; setting timers for regular updates")
-  setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
-  setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
+  updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
+  updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
 
   // Set daily downloads
-  setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
-  setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
+  sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
+  sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
 }
 
 // Refreshses all content by sourcing, cleaning, and uploading updates
@@ -52,6 +63,10 @@ function refreshAll() {
 
 // Fetches content for sensors, i.e. descriptions, taglines, and labels
 function sourceSensors(retry=0) {
+
+  // Clear the timers; we'll re-trigger them on completion
+  clearTimer(updateSensorsTimer);
+  clearTimer(sourceSensorsTimer);
 
   makeLogEntry("Sourcing sensor content - attempt " + (retry+1))
 
@@ -99,8 +114,9 @@ function sourceSensors(retry=0) {
       makeLogEntry("Successfully sourced sensor content", "S")
 
       // If success, set timer for tomorrow at 8am
-      setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
+      // Clear timer if it's already set
 
+      sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
       updateSensors();
 
     } else {
@@ -113,7 +129,7 @@ function sourceSensors(retry=0) {
         makeLogEntry("Unable to source sensor content", "F")
 
         // Set timer to try next time
-        setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour))
+        sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour))
 
         console.log(log);
 
@@ -123,7 +139,7 @@ function sourceSensors(retry=0) {
       } else {
         // Wait 10 secs and retry
         makeLogEntry("Failed - retrying...", "F")
-        setTimeout(function() { sourceSensors(++retry) }, 10000)
+        sourceSensorsTimer = setTimeout(function() { sourceSensors(++retry) }, 10000)
       }
     }
   });
@@ -178,7 +194,7 @@ function updateSensors(retry=0) {
     // Set the timer for next time
     if(log.success) {
       // Set it to run at every [interval] mins past the hour, just for reliability
-      setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
+      updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
       makeLogEntry("Successfully updated sensor content", "S")
     } else {
       // If fail, retry three times, then raise an alert and wait til the next interval
@@ -191,11 +207,11 @@ function updateSensors(retry=0) {
         console.log(log);
 
         // Set timer to try next time
-        setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
+        updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
       } else {
         // Wait 30 secs and retry
         makeLogEntry("Sensor update failed - retrying...", "F")
-        setTimeout(function() { updateSensors(++retry) }, 30000)
+        updateSensorsTimer = setTimeout(function() { updateSensors(++retry) }, 30000)
       }
     }
   });
@@ -205,6 +221,12 @@ function updateSensors(retry=0) {
 
 // Source data - runs every day at 9am
 function sourceILI(retry=0) {
+
+  // Clear timers
+  clearTimer(updateILITimer);
+  clearTimer(sourceILITimer);
+  clearTimer(cleanILITimer);
+
   makeLogEntry("Sourcing ILI content - attempt " + (retry+1))
 
   // Call the function
@@ -249,7 +271,7 @@ function sourceILI(retry=0) {
     if(log.success) {
       makeLogEntry("Successfully sourced ILI content", "S")
       // If success, set timer for tomorrow at 8am
-      setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
+      sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
 
       // Initialise data cleaning
       cleanILI();
@@ -261,7 +283,7 @@ function sourceILI(retry=0) {
         // TODO
         makeLogEntry("Unable to source ILI content", "F")
         // Set timer to try next time
-        setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour))
+        sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour))
 
         // TODO REMOVE
         console.log(log);
@@ -271,7 +293,7 @@ function sourceILI(retry=0) {
       } else {
         // Wait 10 secs and retry
         makeLogEntry("Failed to source ILI content - retrying...", "F")
-        setTimeout(function() { sourceILI(++retry) }, 10000)
+        sourceILITimer = setTimeout(function() { sourceILI(++retry) }, 10000)
       }
     }
   });
@@ -339,7 +361,7 @@ function cleanILI(retry=0) {
       } else {
         // Wait 10 secs and retry
         makeLogEntry("Failed to clean ILI content - retrying...", "F")
-        setTimeout(function() { cleanILI(++retry) }, 10000)
+        cleanILITimer = setTimeout(function() { cleanILI(++retry) }, 10000)
       }
     }
   });
@@ -391,7 +413,7 @@ function updateILI(retry=0) {
     if(log.success) {
       makeLogEntry("Successfully updated ILI content", "S")
       // Sourced and cleaned data - update ILI
-      setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
+      updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
 
     } else {
       // If fail, retry twice, then raise an error and wait a day
@@ -403,11 +425,11 @@ function updateILI(retry=0) {
         makeLogEntry(JSON.stringify(log));
 
         // Done for now - attempt to update next time
-        setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
+        updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
       } else {
         // Wait 10 secs and retry
         makeLogEntry("Failed - retrying...", "F")
-        setTimeout(function() { updateILI(++retry) }, 10000)
+        updateILITimer = setTimeout(function() { updateILI(++retry) }, 10000)
       }
     }
   });
@@ -487,8 +509,45 @@ function makeLogEntry(logText, pre="-") {
       return;
     }
   });
-
 }
+
+//// MONGO CONNECTION
+
+const mongoURL = 'mongodb://localhost:27017';
+const mongoName = 'totem_backend';
+
+function mongoExec(method, collection, data) {
+  MongoClient.connect(mongoURL, function(err, client) {
+
+    assert.equal(null, err);
+    console.log("Connected to Mongo server")
+    const db = client.db(mongoName)
+
+    method(db, collection, data, function() {
+      client.close()
+    });
+
+  });
+}
+
+function mongoInsertOne(db, collection, data, callback) {
+  const col = db.collection(collection);
+  col.insert(data, function(err, res) {
+    assert.equal(err, null);
+    console.log("Successfully inserted");
+    callback(res);
+  });
+}
+
+// function mongoInsertMany(table, obj) {
+//   MongoClient.connect(mongoURL, function(err, client) {
+//     assert.equal(null, err);
+//     console.log("Connected to Mongo server")
+//     const db = client.db(mongoName)
+//
+//     client.close();
+//   })
+// }
 
 ////////////////////////////////////////////////////////////////////////////////
 
