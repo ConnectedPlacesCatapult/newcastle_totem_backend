@@ -541,10 +541,10 @@ if not matching_flag:
     temp['category'] = recommendation[0]['category']
     temp['coordinates'] = recommendation[0]['coordinates']
     temp['name'] = recommendation[0]['name']
-    temp['address'] = recommendation[0]['address']
     temp['subcategory'] = recommendation[0]['properties'][0]['subcategory']
     ## Adding the remaining attributes if the recommendation is an event
     if temp['category'] == 'event':
+        temp['address'] = recommendation[0]['address']
         temp['properties'] = [{'start': recommendation[0]['properties'][0]['start'],
                                 'free': recommendation[0]['properties'][0]['free'],
                                 'description': recommendation[0]['properties'][0]['description']}]
@@ -668,7 +668,8 @@ elif recommendation[0]['category'] == 'food_drinks':
 
 
 ## Cropping the action msg
-action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
+#action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
+action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[3]
 #print action_msg
 
 recommendation[0]['action_msg'] = action_msg
