@@ -1,8 +1,97 @@
 <!DOCTYPE html>
 <html>
 
+<head>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
 <body>
-  FCC Totem Mainframe Test
+  <div id="header">
+    <div class="wrapper">
+      <h1>Newcastle Mainframe</h1>
+      <a id="login" class="action neutral" href="#">Login</a>
+    </div>
+  </div>
+  <div class="wrapper">
+
+    <div class="container">
+      <div class="container_row container_title">
+        <div class="container_header">
+          <h2 class="header">Server</h2>
+          <p class="header_timestamp">Last update 10 minutes ago</p>
+        </div>
+
+        <div class="status live"></div>
+        <!-- <h2 class="status live">Test status</h2> -->
+      </div>
+      <div class="container_row container_item">
+        <h3 class="item">Mainframe Server</h3>
+
+        <h3 class="value live_text">Live</h3>
+        <p class="item_timestamp">test</p>
+      </div>
+      <div class="container_row container_item">
+        <h3 class="item">ILI Content</h3>
+        <h3 class="value">value</h3>
+      </div>
+      <div class="container_row container_item">
+        <h3 class="item">Sensors Content</h3>
+        <h3 class="value">value</h3>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="container_row container_title">
+        <div class="container_header">
+          <h2 class="header">Totem 1 - Ouseburn Valley</h2>
+          <p class="header_timestamp">Last update 60 minutes ago</p>
+        </div>
+
+        <div class="status warn"></div>
+        <!-- <h2 class="status live">Test status</h2> -->
+      </div>
+      <div class="container_row container_item">
+        <h3 class="item">Current Page</h3>
+        <h3 class="value">Screensaver</h3>
+      </div>
+      <div class="container_row container_item">
+        <h3 class="item">Last Interaction</h3>
+        <h3 class="value">2 hours ago</h3>
+      </div>
+      <div class="container_row container_item">
+        <h3 class="item">Interactions Today</h3>
+        <h3 class="value">43</h3>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="container_row container_title">
+        <div class="container_header">
+          <h2 class="header">Totem 2 - Helix</h2>
+          <p class="header_timestamp">Last update 60 minutes ago</p>
+        </div>
+
+        <div class="status live"></div>
+        <!-- <h2 class="status live">Test status</h2> -->
+      </div>
+      <div class="container_row container_item">
+        <h3 class="item">Item</h3>
+        <h3 class="value">value</h3>
+      </div>
+      <div class="container_row container_item">
+        <h3 class="item">Item</h3>
+        <h3 class="value">value</h3>
+      </div>
+      <div class="container_row container_item">
+        <h3 class="item">Item</h3>
+        <h3 class="value">value</h3>
+      </div>
+    </div>
+
+  </div>
 </body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+<script src="index.js"></script>
 
 </html>

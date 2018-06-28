@@ -1,4 +1,7 @@
 {
+  "mongoUser": "mainframe",
+  "mongoPass": "131b669fa1ff10add4bca25b2624bad9",
+
   "sourceSensorsHour":8,
   "updateSensorsMinuteInterval":15,
   "sourceILIHour":8,

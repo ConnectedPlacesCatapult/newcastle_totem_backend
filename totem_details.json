@@ -1,6 +1,7 @@
 [
   {
     "id":1,
+    "name":"Ouseburn Valley",
     "lat":54.975194,
     "lon":-1.592056,
     "sensor_sources": {
@@ -30,6 +31,7 @@
   },
   {
     "id":2,
+    "name":"Helix",
     "lat":54.979988,
     "lon":-1.611195,
     "sensor_sources": {
