@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const bodyParser = require('body-parser')
 const { spawn } = require('child_process');
 
 const MongoClient = require('mongodb').MongoClient;
@@ -63,7 +64,7 @@ function refreshAll() {
 //// SENSORS
 
 // Fetches content for sensors, i.e. descriptions, taglines, and labels
-function sourceSensors(retry=0) {
+function sourceSensors(retry=0, log=null) {
 
   // Clear the timers; we'll re-trigger them on completion
   clearTimer(updateSensorsTimer);
@@ -76,12 +77,17 @@ function sourceSensors(retry=0) {
 
   var complete = false;
 
-  var log = {
-    timestamp: Date.now(),
-    attempt: (retry+1),
-    success: false,
-    errors: [],
-    warnings: []
+  // Initialise log if this is attempt 1
+  if(log == null) {
+    log = {
+      timestamp: Date.now(),
+      attempts: 1,
+      success: false,
+      errors: [],
+      warnings: []
+    }
+  } else {
+    log.attempts += 1;
   }
 
   // stdout should log warnings
@@ -106,9 +112,6 @@ function sourceSensors(retry=0) {
       log.errors.push("Exited with code " + code);
     }
 
-    // Save the log
-    mongoExec(mongoInsertOne, "logs_sensors_source", log)
-
     // Set the timer for next time
     if(log.success) {
 
@@ -116,6 +119,9 @@ function sourceSensors(retry=0) {
 
       // If success, set timer for tomorrow at 8am
       // Clear timer if it's already set
+
+      // Save the log
+      mongoExec(mongoInsertOne, "logs_sensors_source", log)
 
       sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
       updateSensors();
@@ -132,7 +138,8 @@ function sourceSensors(retry=0) {
         // Set timer to try next time
         sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour))
 
-        console.log(log);
+        // Save the log
+        mongoExec(mongoInsertOne, "logs_sensors_source", log)
 
         // Done for now - refresh sensors
         updateSensors();
@@ -147,7 +154,7 @@ function sourceSensors(retry=0) {
 }
 
 // Update sensors - should be called every 10 minutes
-function updateSensors(retry=0) {
+function updateSensors(retry=0, log=null) {
 
   makeLogEntry("Updating sensors - attempt " + (retry+1))
 
@@ -157,12 +164,17 @@ function updateSensors(retry=0) {
   // Completion flag to enforce synchronous execution; may be superfluous
   var complete = false;
 
-  var log = {
-    timestamp: Date.now(),
-    attempts: (retry+1),
-    success: false,
-    errors: [],
-    warnings: []
+  // Initialise log if this is attempt 1
+  if(log == null) {
+    log = {
+      timestamp: Date.now(),
+      attempts: 1,
+      success: false,
+      errors: [],
+      warnings: []
+    }
+  } else {
+    log.attempts += 1;
   }
 
   // stdout should log warnings
@@ -189,30 +201,31 @@ function updateSensors(retry=0) {
       log.errors.push("Exited with code " + code);
     }
 
-    // Save the log
-    mongoExec(mongoInsertOne, "logs_sensors_update", log)
-
     // Set the timer for next time
     if(log.success) {
       // Set it to run at every [interval] mins past the hour, just for reliability
       updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
+
+      // Save the log
+      mongoExec(mongoInsertOne, "logs_sensors_update", log)
+
       makeLogEntry("Successfully updated sensor content", "S")
     } else {
       // If fail, retry three times, then raise an alert and wait til the next interval
       if(retry >= 2) {
         // Out of retries - raise alert
         // TODO
-
         makeLogEntry("Unable to update sensor content", "F")
 
-        console.log(log);
+        // Save the log
+        mongoExec(mongoInsertOne, "logs_sensors_update", log)
 
         // Set timer to try next time
         updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
       } else {
         // Wait 30 secs and retry
         makeLogEntry("Sensor update failed - retrying...", "F")
-        updateSensorsTimer = setTimeout(function() { updateSensors(++retry) }, 30000)
+        updateSensorsTimer = setTimeout(function() { updateSensors(++retry, log) }, 30000)
       }
     }
   });
@@ -221,7 +234,7 @@ function updateSensors(retry=0) {
 //// ILI
 
 // Source data - runs every day at 9am
-function sourceILI(retry=0) {
+function sourceILI(retry=0, log=null) {
 
   // Clear timers
   clearTimer(updateILITimer);
@@ -235,12 +248,17 @@ function sourceILI(retry=0) {
 
   var complete = false;
 
-  var log = {
-    timestamp: Date.now(),
-    attempt: (retry+1),
-    success: false,
-    errors: [],
-    warnings: []
+  // Initialise log if this is attempt 1
+  if(log == null) {
+    log = {
+      timestamp: Date.now(),
+      attempts: 1,
+      success: false,
+      errors: [],
+      warnings: []
+    }
+  } else {
+    log.attempts += 1;
   }
 
   // stdout should log warnings
@@ -265,14 +283,15 @@ function sourceILI(retry=0) {
       log.errors.push("Exited with code " + code);
     }
 
-    // Save the log
-    mongoExec(mongoInsertOne, "logs_ili_source", log)
 
     // Set the timer for next time
     if(log.success) {
       makeLogEntry("Successfully sourced ILI content", "S")
       // If success, set timer for tomorrow at 8am
       sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
+
+      // Save the log
+      mongoExec(mongoInsertOne, "logs_ili_source", log)
 
       // Initialise data cleaning
       cleanILI();
@@ -286,22 +305,22 @@ function sourceILI(retry=0) {
         // Set timer to try next time
         sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour))
 
-        // TODO REMOVE
-        console.log(log);
+        // Save the log
+        mongoExec(mongoInsertOne, "logs_ili_source", log)
 
         // Done for now - update ILI content with existing static data
         updateILI()
       } else {
         // Wait 10 secs and retry
         makeLogEntry("Failed to source ILI content - retrying...", "F")
-        sourceILITimer = setTimeout(function() { sourceILI(++retry) }, 10000)
+        sourceILITimer = setTimeout(function() { sourceILI(++retry, log) }, 10000)
       }
     }
   });
 }
 
 // Clean data - runs after source data has successfully returned
-function cleanILI(retry=0) {
+function cleanILI(retry=0, log=null) {
   makeLogEntry("Cleaning ILI content - attempt " + (retry+1))
 
   // Call the function
@@ -309,12 +328,17 @@ function cleanILI(retry=0) {
 
   var complete = false;
 
-  var log = {
-    timestamp: Date.now(),
-    attempt: (retry+1),
-    success: false,
-    errors: [],
-    warnings: []
+  // Initialise log if this is attempt 1
+  if(log == null) {
+    log = {
+      timestamp: Date.now(),
+      attempts: 1,
+      success: false,
+      errors: [],
+      warnings: []
+    }
+  } else {
+    log.attempts += 1;
   }
 
   // stdout should log warnings
@@ -339,12 +363,13 @@ function cleanILI(retry=0) {
       log.errors.push("Exited with code " + code);
     }
 
-    // Save the log
-    mongoExec(mongoInsertOne, "logs_ili_clean", log)
-
     // Set the timer for next time
     if(log.success) {
       makeLogEntry("Successfully cleaned ILI content", "S")
+
+      // Save the log
+      mongoExec(mongoInsertOne, "logs_ili_clean", log)
+
       // Sourced and cleaned data - update ILI
       updateILI();
 
@@ -354,22 +379,23 @@ function cleanILI(retry=0) {
         // Out of retries - raise alert with admin
         // TODO
         makeLogEntry("Unable to clean ILI content", "F")
+
+        // Save the log
+        mongoExec(mongoInsertOne, "logs_ili_clean", log)
+
         // Done for now - update ILI content with existing static data
-
-        console.log(log);
-
         updateILI()
       } else {
         // Wait 10 secs and retry
         makeLogEntry("Failed to clean ILI content - retrying...", "F")
-        cleanILITimer = setTimeout(function() { cleanILI(++retry) }, 10000)
+        cleanILITimer = setTimeout(function() { cleanILI(++retry, log) }, 10000)
       }
     }
   });
 }
 
 // Call data - runs every 15 minutes
-function updateILI(retry=0) {
+function updateILI(retry=0, log=null) {
   makeLogEntry("Updating ILI content - attempt " + (retry+1))
 
   // Call the function
@@ -377,12 +403,17 @@ function updateILI(retry=0) {
 
   var complete = false;
 
-  var log = {
-    timestamp: Date.now(),
-    attempt: (retry+1),
-    success: false,
-    errors: [],
-    warnings: []
+  // Initialise log if this is attempt 1
+  if(log == null) {
+    log = {
+      timestamp: Date.now(),
+      attempts: 1,
+      success: false,
+      errors: [],
+      warnings: []
+    }
+  } else {
+    log.attempts += 1;
   }
 
   // stdout should log warnings
@@ -407,12 +438,13 @@ function updateILI(retry=0) {
       log.errors.push("Exited with code " + code);
     }
 
-    // Save the log
-    mongoExec(mongoInsertOne, "logs_ili_update", log)
-
     // Set the timer for next time
     if(log.success) {
       makeLogEntry("Successfully updated ILI content", "S")
+
+      // Save the log
+      mongoExec(mongoInsertOne, "logs_ili_update", log)
+
       // Sourced and cleaned data - update ILI
       updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
 
@@ -422,15 +454,17 @@ function updateILI(retry=0) {
         // Out of retries - raise alert with admin
         // TODO
         makeLogEntry("Unable to update ILI content", "F")
-
         makeLogEntry(JSON.stringify(log));
+
+        // Save the log
+        mongoExec(mongoInsertOne, "logs_ili_update", log)
 
         // Done for now - attempt to update next time
         updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
       } else {
         // Wait 10 secs and retry
         makeLogEntry("Failed - retrying...", "F")
-        updateILITimer = setTimeout(function() { updateILI(++retry) }, 10000)
+        updateILITimer = setTimeout(function() { updateILI(++retry, log) }, 10000)
       }
     }
   });
@@ -567,20 +601,30 @@ function mongoInsertMany(db, collection, dataArray, callback) {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-//// PORTAL CALLS
+//// PORTAL HANDLING - socket.io
 
+
+////////////////////////////////////////////////////////////////////////////////
 
 //// ANALYTICS CALLS
 
-/*
+app.use( bodyParser.json() );
+app.use( bodyParser.urlencoded({ extended: true }));
+
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
-// Testing
-app.get('/', (req, res) => res.send('Hello Remote!'))
+app.post('/analytics', function(req, res) {
+  var totem_id = req.body.id;
+  var test = req.body.test;
 
-app.listen(3000, () => console.log('Example app listening on port 3000!'))
-*/
+  res.send(totem_id + ", " + test);
+});
+
+// Testing
+// app.get('/', (req, res) => res.send('Hello Remote!'))
+
+app.listen(3000, () => console.log('Listening on port 3000'))
