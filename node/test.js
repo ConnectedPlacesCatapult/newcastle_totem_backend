@@ -43,8 +43,11 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.post('/', function(req, res)) {
+  res.send("Invalid post - totem analytics should be sent to /analytics")
+}
+
 app.post('/analytics', function(req, res) {
-  console.log("Got a post");
   console.log(req.body);
   var totem_id = req.body.id;
   var test = req.body.test;
