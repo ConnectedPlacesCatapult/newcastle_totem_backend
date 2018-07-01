@@ -685,10 +685,13 @@ io.on('connection', function(socket){
   // Get timestamp for 4am today (start of totem content day)
   var tsToday = getTimestampAtHour(4);
 
-  var dashboardInit = {};
+  var dashboardInit {};
 
-  // Add current totems
-  dashboardInit.totems = totems;
+  // Copy mainframe status
+  dashboardInit.mainframe = JSON.parse(JSON.stringify(mainframeStatus));
+
+  // Copy totems data
+  dashboardInit.totems = JSON.parse(JSON.stringify(totems));
 
   // Get
 
@@ -715,6 +718,10 @@ io.on('connection', function(socket){
 
   // Send the content
   socket.emit("initContent", dashboardInit);
+
+  socket.on("disconnect", function() {
+
+  });
 
   // socket.on("call_name", function(params) {
   //
