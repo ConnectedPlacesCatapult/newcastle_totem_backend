@@ -87,8 +87,8 @@ def parse_reading(reading):
 #
 # Given date in NCL API format, return millisecond UTC timestamp
 #
-def get_ms_timestamp(date):
-    return int(time.mktime(datetime.strptime(date, "%Y-%m-%d %H:%M:%S").timetuple()) * 1000)
+def get_secs_timestamp(date):
+    return int(time.mktime(datetime.strptime(date, "%Y-%m-%d %H:%M:%S").timetuple()))
 
 #
 # Given some string units from NCL, translate to HTML-friendly representation
@@ -132,7 +132,11 @@ def get_squared_distance(p1, p2):
 current_time = int(time.time()*1000);
 
 # For every totem, update sensors
-for totem_id, totem in enumerate(totems, start=1):
+for t_key in totems:
+
+    totem = totems[t_key]
+
+    totem_id = totem["id"]
 
     # Load previous totem data, if it exists
     totem_data = {}
@@ -210,7 +214,7 @@ for totem_id, totem in enumerate(totems, start=1):
                         s_dist = get_squared_distance( [totem["lon"], totem["lat"]], s["geom"]["coordinates"] )
 
                         # Get timestamp "latest" for this sensor
-                        s_timestamp = get_ms_timestamp(s["latest"])
+                        s_timestamp = get_secs_timestamp(s["latest"])
 
                         # For each sensor, run through all variables and data
                         for s_v, s_d  in s["data"].iteritems():
@@ -351,7 +355,7 @@ for totem_id, totem in enumerate(totems, start=1):
 
                         # Timestamp should be an int in milliseconds
                         # NOTE: This should get time in UTC
-                        var_out["timestamp"] = get_ms_timestamp(var_data["data"].items()[0][0]);
+                        var_out["timestamp"] = get_secs_timestamp(var_data["data"].items()[0][0]);
 
                         # Units are translated here rather than frontend
                         var_out["units"] = translate_units(var_data["meta"]["units"])

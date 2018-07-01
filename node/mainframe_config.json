@@ -5,5 +5,13 @@
   "sourceSensorsHour":8,
   "updateSensorsMinuteInterval":15,
   "sourceILIHour":8,
-  "updateILIMinuteInterval":15
+  "updateILIMinuteInterval":15,
+
+  "minHeartbeatSilence":15,
+  "notifications": {
+    "server": [],
+    "content": [],
+    "totems":[],
+    "daily": []
+  }
 }

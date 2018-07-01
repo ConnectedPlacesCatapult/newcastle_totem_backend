@@ -1,6 +1,7 @@
-[
-  {
+{
+  "ouseburn": {
     "id":1,
+    "active":false,
     "name":"Ouseburn Valley",
     "lat":54.975194,
     "lon":-1.592056,
@@ -29,8 +30,9 @@
       }
     }
   },
-  {
+  "helix": {
     "id":2,
+    "active":true,
     "name":"Helix",
     "lat":54.979988,
     "lon":-1.611195,
@@ -59,4 +61,4 @@
       }
     }
   }
-]
+}
