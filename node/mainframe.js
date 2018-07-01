@@ -9,9 +9,50 @@ const assert = require('assert');
 var fs = require('fs');
 var util = require('util');
 
+// Store status of the mainframe for quick lookup on dashboard
+var mainframeStatus = {
+  liveSince: Date.now(),
+  updates: {
+    ili: {
+      live: false,
+      timestamp: null
+    },
+    sensors: {
+      live: false,
+      timestamp: null
+    }
+  },
+  sourcing: {
+    ili: {
+      live: false,
+      timestamp: null
+    },
+    sensors: {
+      live: false,
+      timestamp: null
+    }
+  }
+}
+
 // INIT
 const config = JSON.parse(fs.readFileSync('mainframe_config.json', 'utf8'));
 const totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
+
+// Init totem status logging
+for(var t in totems) {
+  // Only bother with active totems
+  if(totems[t].active) {
+    totems[t].status = {
+      live: null,
+      lastContact: null,
+      curPage: null,
+      lastInteraction: null
+    }
+    // Set the heartbeat timer for this totem, with "init" flag set
+    // Totem status will remain "null" until a reliable status is received
+    resetHeartbeatTimer(t, true);
+  }
+}
 
 // Logs new file monthly
 const logMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
@@ -40,9 +81,13 @@ if(process.argv.includes("init")) {
   //updateILI();
 } else {
   // Set timers for regular updates
-  makeLogEntry("No init command given; setting timers for regular updates")
-  updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
-  updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
+  makeLogEntry("No init command given; commencing regular updates")
+
+  updateSensors();
+  updateILI();
+
+  // updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
+  // updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
 
   // Set daily downloads
   sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
@@ -61,14 +106,14 @@ function refreshAll() {
   sourceILI();
 }
 
-//// SENSORS
+//// SENSORS ///////////////////////////////////////////////////////////////////
 
 // Fetches content for sensors, i.e. descriptions, taglines, and labels
 function sourceSensors(retry=0, log=null) {
 
   // Clear the timers; we'll re-trigger them on completion
-  clearTimer(updateSensorsTimer);
-  clearTimer(sourceSensorsTimer);
+  clearTimeout(updateSensorsTimer);
+  clearTimeout(sourceSensorsTimer);
 
   makeLogEntry("Sourcing sensor content - attempt " + (retry+1))
 
@@ -117,11 +162,11 @@ function sourceSensors(retry=0, log=null) {
 
       makeLogEntry("Successfully sourced sensor content", "S")
 
-      // If success, set timer for tomorrow at 8am
-      // Clear timer if it's already set
-
       // Save the log
       mongoExec(mongoInsertOne, "logs_sensors_source", log)
+
+      mainframeStatus.sourcing.sensors.live = true;
+      mainframeStatus.sourcing.sensors.timestamp = Date.now();
 
       sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
       updateSensors();
@@ -140,6 +185,8 @@ function sourceSensors(retry=0, log=null) {
 
         // Save the log
         mongoExec(mongoInsertOne, "logs_sensors_source", log)
+
+        mainframeStatus.sourcing.sensors.live = false;
 
         // Done for now - refresh sensors
         updateSensors();
@@ -209,6 +256,9 @@ function updateSensors(retry=0, log=null) {
       // Save the log
       mongoExec(mongoInsertOne, "logs_sensors_update", log)
 
+      mainframeStatus.updates.sensors.live = true;
+      mainframeStatus.updates.sensors.timestamp = Date.now();
+
       makeLogEntry("Successfully updated sensor content", "S")
     } else {
       // If fail, retry three times, then raise an alert and wait til the next interval
@@ -219,6 +269,8 @@ function updateSensors(retry=0, log=null) {
 
         // Save the log
         mongoExec(mongoInsertOne, "logs_sensors_update", log)
+
+        mainframeStatus.updates.sensors.live = false;
 
         // Set timer to try next time
         updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
@@ -231,15 +283,15 @@ function updateSensors(retry=0, log=null) {
   });
 }
 
-//// ILI
+//// ILI ///////////////////////////////////////////////////////////////////////
 
 // Source data - runs every day at 9am
 function sourceILI(retry=0, log=null) {
 
   // Clear timers
-  clearTimer(updateILITimer);
-  clearTimer(sourceILITimer);
-  clearTimer(cleanILITimer);
+  clearTimeout(updateILITimer);
+  clearTimeout(sourceILITimer);
+  clearTimeout(cleanILITimer);
 
   makeLogEntry("Sourcing ILI content - attempt " + (retry+1))
 
@@ -287,6 +339,7 @@ function sourceILI(retry=0, log=null) {
     // Set the timer for next time
     if(log.success) {
       makeLogEntry("Successfully sourced ILI content", "S")
+
       // If success, set timer for tomorrow at 8am
       sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
 
@@ -307,6 +360,8 @@ function sourceILI(retry=0, log=null) {
 
         // Save the log
         mongoExec(mongoInsertOne, "logs_ili_source", log)
+
+        mainframeStatus.sourcing.ili.live = false;
 
         // Done for now - update ILI content with existing static data
         updateILI()
@@ -370,6 +425,10 @@ function cleanILI(retry=0, log=null) {
       // Save the log
       mongoExec(mongoInsertOne, "logs_ili_clean", log)
 
+
+      mainframeStatus.sourcing.ili.live = true;
+      mainframeStatus.sourcing.ili.timestamp = Date.now();
+
       // Sourced and cleaned data - update ILI
       updateILI();
 
@@ -382,6 +441,8 @@ function cleanILI(retry=0, log=null) {
 
         // Save the log
         mongoExec(mongoInsertOne, "logs_ili_clean", log)
+
+        mainframeStatus.sourcing.ili.live = false;
 
         // Done for now - update ILI content with existing static data
         updateILI()
@@ -445,6 +506,9 @@ function updateILI(retry=0, log=null) {
       // Save the log
       mongoExec(mongoInsertOne, "logs_ili_update", log)
 
+      mainframeStatus.updates.ili.live = true;
+      mainframeStatus.updates.ili.timestamp = Date.now();
+
       // Sourced and cleaned data - update ILI
       updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
 
@@ -459,6 +523,8 @@ function updateILI(retry=0, log=null) {
         // Save the log
         mongoExec(mongoInsertOne, "logs_ili_update", log)
 
+        mainframeStatus.updates.ili.live = false;
+
         // Done for now - attempt to update next time
         updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
       } else {
@@ -470,7 +536,7 @@ function updateILI(retry=0, log=null) {
   });
 }
 
-//// UTIL
+//// UTIL //////////////////////////////////////////////////////////////////////
 
 function getTimeRemaining(timeout) {
     return Math.ceil((timeout._idleStart + timeout._idleTimeout - Date.now()) / 1000);
@@ -546,7 +612,7 @@ function makeLogEntry(logText, pre="-") {
   });
 }
 
-//// MONGO CONNECTION
+//// MONGO CONNECTION //////////////////////////////////////////////////////////
 // TODO: Log mongo errors on the mainframe!
 
 const mongoURL = 'mongodb://localhost:27017';
@@ -597,16 +663,70 @@ function mongoInsertMany(db, collection, dataArray, callback) {
   });
 }
 
+//// MANAGEMENT DASHBOARD //////////////////////////////////////////////////////
+
+// to is an array of notification types, e.g. "server", "totem", "general"...
+// Defined in mainframe_config.json
+function sendNotification(type, content=null) {
+  var recipients = [];
+  // TODO SEND NOTIFICATION
+}
+
+// Expect totems to send heartbeats every 5 minutes
+
+function alertTotemDown(totem_key) {
+
+  console.log("Totem is down!")
+
+  // Send notifications that totems are down
+  sendNotification("totem_down")
+
+  var t = totems[totem_key]
+
+  // Log the status change in Mongo
+  var stat = {
+    status: false,
+    timestamp: Date.now()
+  }
+
+  mongoExec(mongoInsertOne, "logs_status_"+totem_key, stat)
+
+  t.status.live = false;
+}
+
+function resetHeartbeatTimer(totem_key, init=false) {
+
+  console.log("Resetting heartbeat timer!")
+
+  var t = totems[totem_key];
+
+  // Create timer if not exists
+  if(t.heartbeatTimer) {
+    clearTimeout(t.heartbeatTimer);
+  }
+
+  // Status now true; if false (or null following initialisation), log that the totem is now live
+  if(t.status.live == false || (t.status.live == null && !init)) {
+
+    // Log the status change in Mongo
+    var stat = {
+      status: true,
+      timestamp: Date.now()
+    }
+
+    mongoExec(mongoInsertOne, "logs_status_"+totem_key, stat)
+
+    t.status.live = true;
+
+  }
+
+  // Set new timer
+  t.heartbeatTimer = setTimeout(function() { alertTotemDown(totem_key) }, config.minHeartbeatSilence * 60000)
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-//// PORTAL HANDLING - socket.io
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-//// ANALYTICS CALLS
+//// ANALYTICS CALLS ///////////////////////////////////////////////////////////
 
 app.use( bodyParser.json() );
 app.use( bodyParser.urlencoded({ extended: true }));
@@ -617,11 +737,102 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.post('/analytics', function(req, res) {
-  var totem_id = req.body.id;
-  var test = req.body.test;
+app.post('/', function(req, res) {
+  resObj = {
+    error: "Invalid post - totem analytics should be sent to /analytics"
+  }
+  res.send(resObj);
+});
 
-  res.send(totem_id + ", " + test);
+// Analytics updates are expected every 15 minutes minimum
+app.post('/analytics', function(req, res) {
+
+  resObj = {}
+
+  // EXPECTED BODY:
+  /*
+  {
+    totem_key: [totem key]
+    navigation: [
+      {
+        timestamp
+        page
+        view
+        trigger: button, touch, auto
+        from_page: screensaver_ili, screensaver_uo, screensaver_partner...
+      },
+      ... IN TEMPORAL ORDER, probably one at a time
+    ],
+    interaction: [
+      {
+        timestamp
+        page
+        view
+        trigger: button, touch
+        element_id        - DOM ID of the clicked element (e.g. 'curious route' button)
+        x                 - X position if event_source is "touch"
+        y                 - Y position if event_source is "touch"
+      },
+      ...
+    ]
+  }
+  */
+
+  // Confirm we have an ID
+  if(!("totem_key" in req.body)) {
+    resObj.error = "Missing 'totem_key' field";
+    res.send(resObj);
+    return;
+  } else if (!(req.body.totem_key in totems)) {
+    resObj.error = "Totem key " + req.body.totem_key + " not recognised";
+    res.send(resObj);
+    return;
+  }
+
+  // Update this totem's heartbeat monitor
+  var t = totems[req.body.totem_key];
+
+  // Reset the heartbeat timer
+  resetHeartbeatTimer(req.body.totem_key);
+
+  // Log this as the most recent update
+  t.status.lastContact = Date.now();
+
+  // Unpack any navigation data
+  if("navigation" in req.body) {
+    mongoExec(mongoInsertMany, "logs_navigation_" + req.body.totem_key, req.body.navigation);
+
+    // Save the totem's current page locally; easier access when needed
+    var lastNav = req.body.navigation[req.body.navigation.length-1];
+    t.status.curPage = lastNav.page
+
+    // Handle subpage, if exists
+    if(lastNav.subPage) {
+      t.status.curPge += " - " + lastNav.subPage;
+    }
+
+    // Update this as the last interaction
+    if(t.status.lastInteraction == null || lastNav.timestamp > t.status.lastInteraction) {
+      t.status.lastInteraction = lastNav.timestamp;
+    }
+  }
+
+  // Unpack any interaction data
+  if("interaction" in req.body) {
+    mongoExec(mongoInsertMany, "logs_interaction_" + req.body.totem_key, req.body.interaction);
+
+    var lastInteraction = req.body.interaction[req.body.interaction.length-1].timestamp;
+    if(t.status.lastInteraction == null || lastInteraction > t.status.lastInteraction) {
+      t.status.lastInteraction = lastInteraction;
+    }
+  }
+
+  resObj.success = "true"
+
+  // TODO
+  // Opportunity to send any updates in return
+
+  res.send(resObj);
 });
 
 // Testing
