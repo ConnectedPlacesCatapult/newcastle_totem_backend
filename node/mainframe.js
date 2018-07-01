@@ -617,13 +617,13 @@ function mongoInsertMany(collection, dataArray, callback=null) {
   });
 }
 
-function mongoFindCount(collection, query) {
+function mongoFindCount(collection, query, callback) {
   const col = mdb.collection(collection);
   col.find(query).count(function(err, res) {
     if(err) {
       // TODO handle
     }
-    return res;
+    callback(res);
   });
 }
 
@@ -701,34 +701,36 @@ io.on('connection', function(socket){
   dashboardInit.mainframe = JSON.parse(JSON.stringify(mainframeStatus));
 
   // Test the mongo count
-  dashboardInit.test = mongoFindCount("logs_ili_update", {success:false, timestamp: {$gt: (tsToday-8640000)}});
+  mongoFindCount("logs_ili_update", {success:false, timestamp: {$gt: tsToday}}, function(res) {
+    console.log(res);
+    dashboardInit.test = res;
+    // Get
 
+    // Initial connection - need to send:
+    //  - Time since mainframe has been live
 
-  // Get
+    //  - Time and status of last ILI sourcing
+    //  - Number of fails today
 
-  // Initial connection - need to send:
-  //  - Time since mainframe has been live
+    //  - Time and status of last ILI cleaning
+    //  - Number of fails today
 
-  //  - Time and status of last ILI sourcing
-  //  - Number of fails today
+    //  - Time and status of last ILI update
+    //  - Number of fails today
 
-  //  - Time and status of last ILI cleaning
-  //  - Number of fails today
+    //  - Time and status of last sensors sourcing
+    //  - Number of fails today
 
-  //  - Time and status of last ILI update
-  //  - Number of fails today
+    //  - Time and status of last sensors update
+    //  - Number of fails today
 
-  //  - Time and status of last sensors sourcing
-  //  - Number of fails today
+    //  - Totem details and their status
+    //  - Number of dropouts today
 
-  //  - Time and status of last sensors update
-  //  - Number of fails today
+    // Send the content
+    socket.emit("initContent", dashboardInit);
+  });
 
-  //  - Totem details and their status
-  //  - Number of dropouts today
-
-  // Send the content
-  socket.emit("initContent", dashboardInit);
 
   socket.on("disconnect", function() {
 
