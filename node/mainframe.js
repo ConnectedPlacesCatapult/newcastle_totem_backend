@@ -3,11 +3,24 @@ const app = express()
 const bodyParser = require('body-parser')
 const { spawn } = require('child_process');
 
+// Socket.IO
+var dashboardServer = require("http").createServer();
+var io = require("socket.io")(dashboardServer);
+
+// Mongo
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
+var mdb; // stores persistent DB reference
 
+// Log writing
 var fs = require('fs');
 var util = require('util');
+// Logs new file monthly - store month names
+const logMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
+
+// Init local data
+const config = JSON.parse(fs.readFileSync('mainframe_config.json', 'utf8'));
+const totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
 
 // Store status of the mainframe for quick lookup on dashboard
 var mainframeStatus = {
@@ -34,38 +47,7 @@ var mainframeStatus = {
   }
 }
 
-// INIT
-const config = JSON.parse(fs.readFileSync('mainframe_config.json', 'utf8'));
-const totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
-
-// Init totem status logging
-for(var t in totems) {
-  // Only bother with active totems
-  if(totems[t].active) {
-    totems[t].status = {
-      live: null,
-      lastContact: null,
-      curPage: null,
-      lastInteraction: null
-    }
-    // Set the heartbeat timer for this totem, with "init" flag set
-    // Totem status will remain "null" until a reliable status is received
-    resetHeartbeatTimer(t, true);
-  }
-}
-
-// Logs new file monthly
-const logMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
-
 var debug = false;
-if(process.argv.includes("debug")) {
-  debug = true;
-}
-
-makeLogEntry(" *** RESTARTING MAINFRAME *** ")
-
-// If the 'init' command is given, initialise with a content refresh
-// Else, set the timers to update as normal
 
 // TIMERS
 var updateSensorsTimer = null;
@@ -73,38 +55,6 @@ var sourceSensorsTimer = null;
 var updateILITimer = null;
 var sourceILITimer = null;
 var cleanILITimer = null;
-
-if(process.argv.includes("init")) {
-  makeLogEntry("Init command set - refreshing all content");
-  refreshAll();
-  //updateSensors();
-  //updateILI();
-} else {
-  // Set timers for regular updates
-  makeLogEntry("No init command given; commencing regular updates")
-
-  updateSensors();
-  updateILI();
-
-  // updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
-  // updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
-
-  // Set daily downloads
-  sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
-  sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
-}
-
-// Refreshses all content by sourcing, cleaning, and uploading updates
-function refreshAll() {
-
-  makeLogEntry("Refreshing all content")
-
-  // Source sensor content
-  sourceSensors();
-
-  // Source ILI content
-  sourceILI();
-}
 
 //// SENSORS ///////////////////////////////////////////////////////////////////
 
@@ -163,7 +113,7 @@ function sourceSensors(retry=0, log=null) {
       makeLogEntry("Successfully sourced sensor content", "S")
 
       // Save the log
-      mongoExec(mongoInsertOne, "logs_sensors_source", log)
+      mongoInsertOne("logs_sensors_source", log)
 
       mainframeStatus.sourcing.sensors.live = true;
       mainframeStatus.sourcing.sensors.timestamp = Date.now();
@@ -184,7 +134,7 @@ function sourceSensors(retry=0, log=null) {
         sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour))
 
         // Save the log
-        mongoExec(mongoInsertOne, "logs_sensors_source", log)
+        mongoInsertOne("logs_sensors_source", log)
 
         mainframeStatus.sourcing.sensors.live = false;
 
@@ -254,7 +204,7 @@ function updateSensors(retry=0, log=null) {
       updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
 
       // Save the log
-      mongoExec(mongoInsertOne, "logs_sensors_update", log)
+      mongoInsertOne("logs_sensors_update", log)
 
       mainframeStatus.updates.sensors.live = true;
       mainframeStatus.updates.sensors.timestamp = Date.now();
@@ -268,7 +218,7 @@ function updateSensors(retry=0, log=null) {
         makeLogEntry("Unable to update sensor content", "F")
 
         // Save the log
-        mongoExec(mongoInsertOne, "logs_sensors_update", log)
+        mongoInsertOne("logs_sensors_update", log)
 
         mainframeStatus.updates.sensors.live = false;
 
@@ -344,7 +294,7 @@ function sourceILI(retry=0, log=null) {
       sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
 
       // Save the log
-      mongoExec(mongoInsertOne, "logs_ili_source", log)
+      mongoInsertOne("logs_ili_source", log)
 
       // Initialise data cleaning
       cleanILI();
@@ -359,7 +309,7 @@ function sourceILI(retry=0, log=null) {
         sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour))
 
         // Save the log
-        mongoExec(mongoInsertOne, "logs_ili_source", log)
+        mongoInsertOne("logs_ili_source", log)
 
         mainframeStatus.sourcing.ili.live = false;
 
@@ -423,7 +373,7 @@ function cleanILI(retry=0, log=null) {
       makeLogEntry("Successfully cleaned ILI content", "S")
 
       // Save the log
-      mongoExec(mongoInsertOne, "logs_ili_clean", log)
+      mongoInsertOne("logs_ili_clean", log)
 
 
       mainframeStatus.sourcing.ili.live = true;
@@ -440,7 +390,7 @@ function cleanILI(retry=0, log=null) {
         makeLogEntry("Unable to clean ILI content", "F")
 
         // Save the log
-        mongoExec(mongoInsertOne, "logs_ili_clean", log)
+        mongoInsertOne("logs_ili_clean", log)
 
         mainframeStatus.sourcing.ili.live = false;
 
@@ -504,7 +454,7 @@ function updateILI(retry=0, log=null) {
       makeLogEntry("Successfully updated ILI content", "S")
 
       // Save the log
-      mongoExec(mongoInsertOne, "logs_ili_update", log)
+      mongoInsertOne("logs_ili_update", log)
 
       mainframeStatus.updates.ili.live = true;
       mainframeStatus.updates.ili.timestamp = Date.now();
@@ -521,7 +471,7 @@ function updateILI(retry=0, log=null) {
         makeLogEntry(JSON.stringify(log));
 
         // Save the log
-        mongoExec(mongoInsertOne, "logs_ili_update", log)
+        mongoInsertOne("logs_ili_update", log)
 
         mainframeStatus.updates.ili.live = false;
 
@@ -637,8 +587,8 @@ function mongoExec(method, collection, data) {
   });
 }
 
-function mongoInsertOne(db, collection, dataObj, callback) {
-  const col = db.collection(collection);
+function mongoInsertOne(collection, dataObj, callback) {
+  const col = mdb.collection(collection);
   col.insert(dataObj, function(err, res) {
     if(err) {
       makeLogEntry("mongoInsertOne failed", "F")
@@ -646,12 +596,14 @@ function mongoInsertOne(db, collection, dataObj, callback) {
       // TODO raise status alert
       return;
     }
-    callback(res);
+    if(callback) {
+      callback(res);
+    }
   });
 }
 
-function mongoInsertMany(db, collection, dataArray, callback) {
-  const col = db.collection(collection);
+function mongoInsertMany(collection, dataArray, callback) {
+  const col = mdb.collection(collection);
   col.insertMany(dataArray, function(err, res) {
     if(err) {
       makeLogEntry("mongoInsertMany failed", "F")
@@ -659,11 +611,13 @@ function mongoInsertMany(db, collection, dataArray, callback) {
       // TODO raise status alert
       return;
     }
-    callback(res);
+    if(callback) {
+      callback(res);
+    }
   });
 }
 
-//// MANAGEMENT DASHBOARD //////////////////////////////////////////////////////
+//// MANAGEMENT ////////////////////////////////////////////////////////////////
 
 // to is an array of notification types, e.g. "server", "totem", "general"...
 // Defined in mainframe_config.json
@@ -676,8 +630,6 @@ function sendNotification(type, content=null) {
 
 function alertTotemDown(totem_key) {
 
-  console.log("Totem is down!")
-
   // Send notifications that totems are down
   sendNotification("totem_down")
 
@@ -689,14 +641,12 @@ function alertTotemDown(totem_key) {
     timestamp: Date.now()
   }
 
-  mongoExec(mongoInsertOne, "logs_status_"+totem_key, stat)
+  mongoInsertOne("logs_status_"+totem_key, stat, null)
 
   t.status.live = false;
 }
 
 function resetHeartbeatTimer(totem_key, init=false) {
-
-  console.log("Resetting heartbeat timer!")
 
   var t = totems[totem_key];
 
@@ -714,7 +664,7 @@ function resetHeartbeatTimer(totem_key, init=false) {
       timestamp: Date.now()
     }
 
-    mongoExec(mongoInsertOne, "logs_status_"+totem_key, stat)
+    mongoInsertOne("logs_status_"+totem_key, stat)
 
     t.status.live = true;
 
@@ -724,9 +674,69 @@ function resetHeartbeatTimer(totem_key, init=false) {
   t.heartbeatTimer = setTimeout(function() { alertTotemDown(totem_key) }, config.minHeartbeatSilence * 60000)
 }
 
-////////////////////////////////////////////////////////////////////////////////
+//// DASHBOARD (socket.io) /////////////////////////////////////////////////////
 
-//// ANALYTICS CALLS ///////////////////////////////////////////////////////////
+// db.logs_ili_update.find({success:false, timestamp: { $gt: 1530255257410 } } ).count()
+
+io.on('connection', function(socket){
+
+  // Get timestamp for 4am today (start of totem content day)
+  var tsToday = getTimestampAtHour(4);
+
+  var dashboardInit = {};
+
+  // Add current totems
+  dashboardInit.totems = Object.assign({}, totems);
+
+  // Get
+
+  // Initial connection - need to send:
+  //  - Time since mainframe has been live
+
+  //  - Time and status of last ILI sourcing
+  //  - Number of fails today
+
+  //  - Time and status of last ILI cleaning
+  //  - Number of fails today
+
+  //  - Time and status of last ILI update
+  //  - Number of fails today
+
+  //  - Time and status of last sensors sourcing
+  //  - Number of fails today
+
+  //  - Time and status of last sensors update
+  //  - Number of fails today
+
+  //  - Totem details and their status
+  //  - Number of dropouts today
+
+  // Send the content
+  socket.emit("initContent", dashboardInit);
+
+  // socket.on("call_name", function(params) {
+  //
+  // });
+
+});
+
+// Get the timestamp for a given hour, from the past 24 hours
+function getTimestampAtHour(targetHour) {
+  var d = new Date();
+  var tsToday = d.getTime();
+
+  var hr = d.getHours() - targetHour;
+  if(hr < 0) {
+    hr += 24;
+  }
+
+  // Subtract time since targetHour to get timestamp for this time
+  tsToday -= ((hr * 60) + d.getMinutes()) * 60000;
+
+  return tsToday;
+}
+
+//// ANALYTICS API ///////////////////////////////////////////////////////////
 
 app.use( bodyParser.json() );
 app.use( bodyParser.urlencoded({ extended: true }));
@@ -757,7 +767,7 @@ app.post('/analytics', function(req, res) {
       {
         timestamp
         page
-        view
+        subpage
         trigger: button, touch, auto
         from_page: screensaver_ili, screensaver_uo, screensaver_partner...
       },
@@ -767,7 +777,7 @@ app.post('/analytics', function(req, res) {
       {
         timestamp
         page
-        view
+        subpage
         trigger: button, touch
         element_id        - DOM ID of the clicked element (e.g. 'curious route' button)
         x                 - X position if event_source is "touch"
@@ -804,7 +814,7 @@ app.post('/analytics', function(req, res) {
 
   // Unpack any navigation data
   if("navigation" in req.body) {
-    mongoExec(mongoInsertMany, "logs_navigation_" + req.body.totem_key, req.body.navigation);
+    mongoInsertMany("logs_navigation_" + req.body.totem_key, req.body.navigation);
 
     // Save the totem's current page locally; easier access when needed
     var lastNav = req.body.navigation[req.body.navigation.length-1];
@@ -823,7 +833,7 @@ app.post('/analytics', function(req, res) {
 
   // Unpack any interaction data
   if("interaction" in req.body) {
-    mongoExec(mongoInsertMany, "logs_interaction_" + req.body.totem_key, req.body.interaction);
+    mongoInsertMany("logs_interaction_" + req.body.totem_key, req.body.interaction);
 
     var lastInteraction = req.body.interaction[req.body.interaction.length-1].timestamp;
     if(t.status.lastInteraction == null || lastInteraction > t.status.lastInteraction) {
@@ -839,7 +849,84 @@ app.post('/analytics', function(req, res) {
   res.send(resObj);
 });
 
-// Testing
-// app.get('/', (req, res) => res.send('Hello Remote!'))
+//// SERVER INITIALISATION /////////////////////////////////////////////////////
 
-app.listen(3000, () => console.log('Listening on port 3000'))
+MongoClient.connect(mongoURL, function(err, client) {
+  if(err) {
+    makeLogEntry("MONGO CONNECTION FAILED", "F")
+    makeLogEntry(JSON.stringify(err), "F");
+    // TODO LOG ERROR FOR MAINFRAME!
+    process.exit();
+  }
+
+  mdb = client.db(mongoName);
+
+  // Begin mainframe initialisation
+  initMainframe();
+
+  // Start analytics endpoints
+  app.listen(3000, () => console.log('Analytics listening on port 3000'))
+
+  // Start dashboard socket listener
+  dashboardServer.listen(3001, () => console.log("Dashboard socket listening on port 3001"));
+});
+
+function initMainframe() {
+
+  makeLogEntry(" *** RESTARTING MAINFRAME *** ")
+
+  // Init totem status logging
+  for(var t in totems) {
+    totems[t].status = {
+      live: null,
+      lastContact: null,
+      curPage: null,
+      lastInteraction: null
+    }
+
+    // Set the heartbeat timer for this totem, with "init" flag set
+    // Totem status will remain "null" until a reliable status is received
+    // Only set heartbeat timer for active totems
+    if(totems[t].active) {
+      resetHeartbeatTimer(t, true);
+    }
+  }
+
+  // Check debug
+  if(process.argv.includes("debug")) {
+    debug = true;
+  }
+
+  if(process.argv.includes("init")) {
+    makeLogEntry("Init command set - refreshing all content");
+    refreshAll();
+    //updateSensors();
+    //updateILI();
+  } else {
+    // Set timers for regular updates
+    makeLogEntry("No init command given; commencing regular updates")
+
+    // Update initially
+    updateSensors();
+    updateILI();
+
+    // updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
+    // updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
+
+    // Set daily downloads
+    sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
+    sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
+  }
+}
+
+// Refreshses all content by sourcing, cleaning, and uploading updates
+function refreshAll() {
+
+  makeLogEntry("Refreshing all content")
+
+  // Source sensor content
+  sourceSensors();
+
+  // Source ILI content
+  sourceILI();
+}
