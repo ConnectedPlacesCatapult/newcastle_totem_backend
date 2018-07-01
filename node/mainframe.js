@@ -685,7 +685,7 @@ io.on('connection', function(socket){
   // Get timestamp for 4am today (start of totem content day)
   var tsToday = getTimestampAtHour(4);
 
-  var dashboardInit {};
+  var dashboardInit = {};
 
   // Copy mainframe status
   dashboardInit.mainframe = JSON.parse(JSON.stringify(mainframeStatus));
