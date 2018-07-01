@@ -680,13 +680,15 @@ function resetHeartbeatTimer(totem_key, init=false) {
 
 io.on('connection', function(socket){
 
+  console.log("Got a connection");
+
   // Get timestamp for 4am today (start of totem content day)
   var tsToday = getTimestampAtHour(4);
 
   var dashboardInit = {};
 
   // Add current totems
-  dashboardInit.totems = Object.assign({}, totems);
+  dashboardInit.totems = totems;
 
   // Get
 
@@ -717,7 +719,6 @@ io.on('connection', function(socket){
   // socket.on("call_name", function(params) {
   //
   // });
-
 });
 
 // Get the timestamp for a given hour, from the past 24 hours
