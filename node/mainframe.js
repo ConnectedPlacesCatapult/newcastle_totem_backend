@@ -617,9 +617,14 @@ function mongoInsertMany(collection, dataArray, callback=null) {
   });
 }
 
-function mongoFindCount(collection, query, callback=null) {
+function mongoFindCount(collection, query) {
   const col = mdb.collection(collection);
-  return col.find(query).count()
+  col.find(query).count(function(err, res) {
+    if(err) {
+      // TODO handle
+    }
+    return res;
+  });
 }
 
 //// MANAGEMENT ////////////////////////////////////////////////////////////////
@@ -696,7 +701,8 @@ io.on('connection', function(socket){
   dashboardInit.mainframe = JSON.parse(JSON.stringify(mainframeStatus));
 
   // Test the mongo count
-  dashboardInit.test = mongoFindCount("logs_ili_update", {success:false, timestamp: {$gt: tsToday}});
+  dashboardInit.test = mongoFindCount("logs_ili_update", {success:false, timestamp: {$gt: (tsToday-8640000)}});
+
 
   // Get
 
