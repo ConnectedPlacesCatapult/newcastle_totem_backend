@@ -787,6 +787,10 @@ app.post('/analytics', function(req, res) {
     resObj.error = "Totem key " + req.body.totem_key + " not recognised";
     res.send(resObj);
     return;
+  } else if(totems[req.body.totem_key].active == false) {
+    resObj.error = "Totem " + req.body.totem_key + " is set 'inactive' in the config; disregarding";
+    res.send(resObj);
+    return;
   }
 
   // Update this totem's heartbeat monitor
