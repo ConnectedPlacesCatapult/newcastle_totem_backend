@@ -587,7 +587,7 @@ function mongoExec(method, collection, data) {
   });
 }
 
-function mongoInsertOne(collection, dataObj, callback) {
+function mongoInsertOne(collection, dataObj, callback=null) {
   const col = mdb.collection(collection);
   col.insert(dataObj, function(err, res) {
     if(err) {
@@ -602,7 +602,7 @@ function mongoInsertOne(collection, dataObj, callback) {
   });
 }
 
-function mongoInsertMany(collection, dataArray, callback) {
+function mongoInsertMany(collection, dataArray, callback=null) {
   const col = mdb.collection(collection);
   col.insertMany(dataArray, function(err, res) {
     if(err) {
@@ -615,6 +615,11 @@ function mongoInsertMany(collection, dataArray, callback) {
       callback(res);
     }
   });
+}
+
+function mongoFindCount(collection, query, callback=null) {
+  const col = mdb.collection(collection);
+  return col.find(query).count()
 }
 
 //// MANAGEMENT ////////////////////////////////////////////////////////////////
@@ -690,8 +695,8 @@ io.on('connection', function(socket){
   // Copy mainframe status
   dashboardInit.mainframe = JSON.parse(JSON.stringify(mainframeStatus));
 
-  // Copy totems data
-  dashboardInit.totems = JSON.parse(JSON.stringify(totems));
+  // Test the mongo count
+  dashboardInit.test = mongoFindCount("logs_ili_update", {success:false, timestamp: {$gt: tsToday}});
 
   // Get
 
