@@ -20,29 +20,36 @@ const logMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","
 
 // Init local data
 const config = JSON.parse(fs.readFileSync('mainframe_config.json', 'utf8'));
-const totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
+var totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
 
 // Store status of the mainframe for quick lookup on dashboard
+// NOTE: Logs for this are stored locally and refreshed daily
 var mainframeStatus = {
   liveSince: Date.now(),
   updates: {
     ili: {
       live: false,
-      timestamp: null
+      lastUpdated: null,
     },
     sensors: {
       live: false,
-      timestamp: null
+      lastUpdated: null,
     }
   },
   sourcing: {
     ili: {
       live: false,
-      timestamp: null
+      lastUpdated: null,
     },
     sensors: {
       live: false,
-      timestamp: null
+      lastUpdated: null,
+    }
+  },
+  cleaning: {
+    ili: {
+      live: false,
+      lastUpdated: null,
     }
   }
 }
@@ -78,8 +85,6 @@ function sourceSensors(retry=0, log=null) {
       timestamp: Date.now(),
       attempts: 1,
       success: false,
-      errors: [],
-      warnings: []
     }
   } else {
     log.attempts += 1;
@@ -88,6 +93,10 @@ function sourceSensors(retry=0, log=null) {
   // stdout should log warnings
   script.stdout.on('data', function(data) {
     if(!complete) {
+      // Create warnings array if none
+      if(log.warnings == undefined) {
+        log.warnings = [];
+      }
       log.warnings.push(data.toString());
     }
   });
@@ -95,6 +104,10 @@ function sourceSensors(retry=0, log=null) {
   // stderr logs errors
   script.stderr.on('data', function(data) {
     if(!complete) {
+      // Create errors array if none
+      if(log.errors == undefined) {
+        log.errors = [];
+      }
       log.errors.push(data.toString());
     }
   });
@@ -104,6 +117,9 @@ function sourceSensors(retry=0, log=null) {
     if(code == 0) {
       log.success = true;
     } else {
+      if(log.errors == undefined) {
+        log.errors = [];
+      }
       log.errors.push("Exited with code " + code);
     }
 
@@ -116,7 +132,7 @@ function sourceSensors(retry=0, log=null) {
       mongoInsertOne("logs_sensors_source", log)
 
       mainframeStatus.sourcing.sensors.live = true;
-      mainframeStatus.sourcing.sensors.timestamp = Date.now();
+      mainframeStatus.sourcing.sensors.lastUpdated = Date.now();
 
       sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
       updateSensors();
@@ -167,8 +183,6 @@ function updateSensors(retry=0, log=null) {
       timestamp: Date.now(),
       attempts: 1,
       success: false,
-      errors: [],
-      warnings: []
     }
   } else {
     log.attempts += 1;
@@ -177,6 +191,10 @@ function updateSensors(retry=0, log=null) {
   // stdout should log warnings
   script.stdout.on('data', function(data) {
     if(!complete) {
+      // Create warnings array if none
+      if(log.warnings == undefined) {
+        log.warnings = [];
+      }
       log.warnings.push(data.toString());
     }
   });
@@ -184,17 +202,22 @@ function updateSensors(retry=0, log=null) {
   // stderr logs errors
   script.stderr.on('data', function(data) {
     if(!complete) {
+      // Create errors array if none
+      if(log.errors == undefined) {
+        log.errors = [];
+      }
       log.errors.push(data.toString());
     }
   });
 
-  // Handle exit
   script.on("exit", function(code, sig) {
     complete = true;
-
     if(code == 0) {
       log.success = true;
     } else {
+      if(log.errors == undefined) {
+        log.errors = [];
+      }
       log.errors.push("Exited with code " + code);
     }
 
@@ -207,7 +230,7 @@ function updateSensors(retry=0, log=null) {
       mongoInsertOne("logs_sensors_update", log)
 
       mainframeStatus.updates.sensors.live = true;
-      mainframeStatus.updates.sensors.timestamp = Date.now();
+      mainframeStatus.updates.sensors.lastUpdated = Date.now();
 
       makeLogEntry("Successfully updated sensor content", "S")
     } else {
@@ -256,8 +279,6 @@ function sourceILI(retry=0, log=null) {
       timestamp: Date.now(),
       attempts: 1,
       success: false,
-      errors: [],
-      warnings: []
     }
   } else {
     log.attempts += 1;
@@ -266,6 +287,10 @@ function sourceILI(retry=0, log=null) {
   // stdout should log warnings
   script.stdout.on('data', function(data) {
     if(!complete) {
+      // Create warnings array if none
+      if(log.warnings == undefined) {
+        log.warnings = [];
+      }
       log.warnings.push(data.toString());
     }
   });
@@ -273,6 +298,10 @@ function sourceILI(retry=0, log=null) {
   // stderr logs errors
   script.stderr.on('data', function(data) {
     if(!complete) {
+      // Create errors array if none
+      if(log.errors == undefined) {
+        log.errors = [];
+      }
       log.errors.push(data.toString());
     }
   });
@@ -282,6 +311,9 @@ function sourceILI(retry=0, log=null) {
     if(code == 0) {
       log.success = true;
     } else {
+      if(log.errors == undefined) {
+        log.errors = [];
+      }
       log.errors.push("Exited with code " + code);
     }
 
@@ -295,6 +327,9 @@ function sourceILI(retry=0, log=null) {
 
       // Save the log
       mongoInsertOne("logs_ili_source", log)
+
+      mainframeStatus.sourcing.ili.live = true;
+      mainframeStatus.sourcing.ili.lastUpdated = Date.now();
 
       // Initialise data cleaning
       cleanILI();
@@ -339,8 +374,6 @@ function cleanILI(retry=0, log=null) {
       timestamp: Date.now(),
       attempts: 1,
       success: false,
-      errors: [],
-      warnings: []
     }
   } else {
     log.attempts += 1;
@@ -349,6 +382,10 @@ function cleanILI(retry=0, log=null) {
   // stdout should log warnings
   script.stdout.on('data', function(data) {
     if(!complete) {
+      // Create warnings array if none
+      if(log.warnings == undefined) {
+        log.warnings = [];
+      }
       log.warnings.push(data.toString());
     }
   });
@@ -356,6 +393,10 @@ function cleanILI(retry=0, log=null) {
   // stderr logs errors
   script.stderr.on('data', function(data) {
     if(!complete) {
+      // Create errors array if none
+      if(log.errors == undefined) {
+        log.errors = [];
+      }
       log.errors.push(data.toString());
     }
   });
@@ -365,6 +406,9 @@ function cleanILI(retry=0, log=null) {
     if(code == 0) {
       log.success = true;
     } else {
+      if(log.errors == undefined) {
+        log.errors = [];
+      }
       log.errors.push("Exited with code " + code);
     }
 
@@ -375,9 +419,8 @@ function cleanILI(retry=0, log=null) {
       // Save the log
       mongoInsertOne("logs_ili_clean", log)
 
-
       mainframeStatus.sourcing.ili.live = true;
-      mainframeStatus.sourcing.ili.timestamp = Date.now();
+      mainframeStatus.sourcing.ili.lastUpdated = Date.now();
 
       // Sourced and cleaned data - update ILI
       updateILI();
@@ -420,8 +463,6 @@ function updateILI(retry=0, log=null) {
       timestamp: Date.now(),
       attempts: 1,
       success: false,
-      errors: [],
-      warnings: []
     }
   } else {
     log.attempts += 1;
@@ -430,6 +471,10 @@ function updateILI(retry=0, log=null) {
   // stdout should log warnings
   script.stdout.on('data', function(data) {
     if(!complete) {
+      // Create warnings array if none
+      if(log.warnings == undefined) {
+        log.warnings = [];
+      }
       log.warnings.push(data.toString());
     }
   });
@@ -437,6 +482,10 @@ function updateILI(retry=0, log=null) {
   // stderr logs errors
   script.stderr.on('data', function(data) {
     if(!complete) {
+      // Create errors array if none
+      if(log.errors == undefined) {
+        log.errors = [];
+      }
       log.errors.push(data.toString());
     }
   });
@@ -446,6 +495,9 @@ function updateILI(retry=0, log=null) {
     if(code == 0) {
       log.success = true;
     } else {
+      if(log.errors == undefined) {
+        log.errors = [];
+      }
       log.errors.push("Exited with code " + code);
     }
 
@@ -457,7 +509,7 @@ function updateILI(retry=0, log=null) {
       mongoInsertOne("logs_ili_update", log)
 
       mainframeStatus.updates.ili.live = true;
-      mainframeStatus.updates.ili.timestamp = Date.now();
+      mainframeStatus.updates.ili.lastUpdated = Date.now();
 
       // Sourced and cleaned data - update ILI
       updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
@@ -623,7 +675,7 @@ function mongoFindCount(collection, query, callback) {
     if(err) {
       // TODO handle
     }
-    callback(res);
+    callback(err, res);
   });
 }
 
@@ -693,44 +745,43 @@ io.on('connection', function(socket){
   console.log("Got a connection");
 
   // Get timestamp for 4am today (start of totem content day)
-  var tsToday = getTimestampAtHour(4);
+  //var tsToday = getTimestampAtHour(4);
 
   var dashboardInit = {};
 
   // Copy mainframe status
-  dashboardInit.mainframe = JSON.parse(JSON.stringify(mainframeStatus));
+  dashboardInit.mainframe = mainframeStatus;
+  dashboardInit.totems = totems;
 
-  // Test the mongo count
-  mongoFindCount("logs_ili_update", {success:false, timestamp: {$gt: tsToday}}, function(res) {
-    console.log(res);
-    dashboardInit.test = res;
-    // Get
+  //mongoFindCount("logs_ili_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, res) {
 
-    // Initial connection - need to send:
-    //  - Time since mainframe has been live
+  //// Continue from this point
+  // TODO Count attempts or warnings, return that value too
+  // TODO Create full initContent packet and send
+  // TODO Build dashboard page from initContent
+  // TODO Link up controls to request log data
 
-    //  - Time and status of last ILI sourcing
-    //  - Number of fails today
+  //  - Time and status of last ILI sourcing
+  //  - Number of fails today
 
-    //  - Time and status of last ILI cleaning
-    //  - Number of fails today
+  //  - Time and status of last ILI cleaning
+  //  - Number of fails today
 
-    //  - Time and status of last ILI update
-    //  - Number of fails today
+  //  - Time and status of last ILI update
+  //  - Number of fails today
 
-    //  - Time and status of last sensors sourcing
-    //  - Number of fails today
+  //  - Time and status of last sensors sourcing
+  //  - Number of fails today
 
-    //  - Time and status of last sensors update
-    //  - Number of fails today
+  //  - Time and status of last sensors update
+  //  - Number of fails today
 
-    //  - Totem details and their status
-    //  - Number of dropouts today
+  //  - Totem details and their status
+  //  - Number of dropouts today
 
-    // Send the content
-    socket.emit("initContent", dashboardInit);
-  });
+  // Send the content
 
+  socket.emit("initContent", dashboardInit);
 
   socket.on("disconnect", function() {
 
@@ -835,6 +886,7 @@ app.post('/analytics', function(req, res) {
 
   // Unpack any navigation data
   if("navigation" in req.body) {
+    // TODO handle log insert error
     mongoInsertMany("logs_navigation_" + req.body.totem_key, req.body.navigation);
 
     // Save the totem's current page locally; easier access when needed
