@@ -708,13 +708,15 @@ function alertTotemDown(totem_key) {
   t.status.live = false;
 }
 
+
+var heartbeatTimers = {}
 function resetHeartbeatTimer(totem_key, init=false) {
 
   var t = totems[totem_key];
 
-  // Create timer if not exists
-  if(t.heartbeatTimer) {
-    clearTimeout(t.heartbeatTimer);
+  // Clear timer if exists
+  if(totem_key in heartbeatTimers) {
+    clearTimeout(heartbeatTimers[totem_key]);
   }
 
   // Status now true; if false (or null following initialisation), log that the totem is now live
@@ -733,7 +735,7 @@ function resetHeartbeatTimer(totem_key, init=false) {
   }
 
   // Set new timer
-  t.heartbeatTimer = setTimeout(function() { alertTotemDown(totem_key) }, config.minHeartbeatSilence * 60000)
+  heartbeatTimers[totem_key] = setTimeout(function() { alertTotemDown(totem_key) }, config.minHeartbeatSilence * 60000)
 }
 
 //// DASHBOARD (socket.io) /////////////////////////////////////////////////////
