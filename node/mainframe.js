@@ -744,8 +744,6 @@ function resetHeartbeatTimer(totem_key, init=false) {
 
 io.on('connection', function(socket){
 
-  console.log("Got a connection");
-
   // Get timestamp for 4am today (start of totem content day)
   //var tsToday = getTimestampAtHour(4);
 
@@ -755,44 +753,109 @@ io.on('connection', function(socket){
   dashboardInit.mainframe = mainframeStatus;
   dashboardInit.totems = totems;
 
-  //mongoFindCount("logs_ili_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, res) {
+  // Send this content
+  socket.emit("init_content", dashboardInit);
+
+  // Get current ILI status
+  // TODO choose a better way of doing this? And handle errors
+  mongoFindCount("logs_ili_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+    if(!err) {
+      mongoFindCount("logs_ili_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+        if(!err) {
+          socket.emit("status_ili_source", {warnings: numWarnings, errors: numErrors});
+        }
+      })
+    }
+  });
+
+  mongoFindCount("logs_ili_clean", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+    if(!err) {
+      mongoFindCount("logs_ili_clean", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+        if(!err) {
+          socket.emit("status_ili_clean", {warnings: numWarnings, errors: numErrors});
+        }
+      })
+    }
+  });
+
+  mongoFindCount("logs_ili_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+    if(!err) {
+      mongoFindCount("logs_ili_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+        if(!err) {
+          socket.emit("status_ili_update", {warnings: numWarnings, errors: numErrors});
+        }
+      })
+    }
+  });
+
+  // Sensors
+  mongoFindCount("logs_sensors_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+    if(!err) {
+      mongoFindCount("logs_sensors_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+        if(!err) {
+          socket.emit("status_sensors_source", {warnings: numWarnings, errors: numErrors});
+        }
+      })
+    }
+  });
+
+  mongoFindCount("logs_sensors_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+    if(!err) {
+      mongoFindCount("logs_sensors_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+        if(!err) {
+          socket.emit("status_sensors_update", {warnings: numWarnings, errors: numErrors});
+        }
+      })
+    }
+  });
+
+  // Totems - interactions and dropout counts for each
+  for(k in totems) {
+    var stat = {
+      totem_key: k,
+      dropouts: 0,
+      interactions: 0
+    }
+    mongoFindCount("logs_status_"+k, {status:false, timestamp: {$gt: tsToday}}, function(err, numDrops) {
+      if(!err) {
+        stat.dropouts = numDrops;
+        var interactions = 0;
+        mongoFindCount("logs_navigation_"+k, {status:false, timestamp: {$gt: tsToday}}, function(err, navs) {
+          if(!err) {
+            stat.interactions += navs;
+            mongoFindCount("logs_interaction_"+k, {status:false, timestamp: {$gt: tsToday}}, function(err, ints) {
+              if(!err) {
+                stat.interactions += ints;
+                socket.emit("status_totem", stat)
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
 
   //// Continue from this point
-  // TODO Count attempts or warnings, return that value too
-  // TODO Create full initContent packet and send
+
   // TODO Build dashboard page from initContent
   // TODO Link up controls to request log data
 
-  //  - Time and status of last ILI sourcing
-  //  - Number of fails today
 
-  //  - Time and status of last ILI cleaning
-  //  - Number of fails today
-
-  //  - Time and status of last ILI update
-  //  - Number of fails today
-
-  //  - Time and status of last sensors sourcing
-  //  - Number of fails today
-
-  //  - Time and status of last sensors update
-  //  - Number of fails today
-
-  //  - Totem details and their status
-  //  - Number of dropouts today
-
-  // Send the content
-
-  socket.emit("initContent", dashboardInit);
 
   socket.on("disconnect", function() {
 
   });
 
+
+
   // socket.on("call_name", function(params) {
   //
   // });
 });
+
+
+
 
 // Get the timestamp for a given hour, from the past 24 hours
 function getTimestampAtHour(targetHour) {
@@ -837,7 +900,7 @@ app.post('/analytics', function(req, res) {
   /*
   {
     totem_key: [totem key]
-    navigation: [
+    navigation: [   // Optional
       {
         timestamp
         page
@@ -847,7 +910,7 @@ app.post('/analytics', function(req, res) {
       },
       ... IN TEMPORAL ORDER, probably one at a time
     ],
-    interaction: [
+    interaction: [   // Optional
       {
         timestamp
         page
