@@ -39,6 +39,7 @@ h2.status, .down {
 
 h3 {
   font-size: 1em;
+  font-weight: lighter;
   display: inline;
 }
 
@@ -147,6 +148,7 @@ a.action, a.neutral {
   width: 28px;
   border-radius: 14px;
   margin: 8px;
+  background-color: #eee;
 }
 
 .down {
@@ -161,7 +163,12 @@ a.action, a.neutral {
   background-color: #4b4;
 }
 
+.err_text {
+  color: #e44;
+}
+
 .down_text {
+  font-weight: bold;
   color: #e44;
 }
 
@@ -170,5 +177,6 @@ a.action, a.neutral {
 }
 
 .live_text {
+  font-weight: bold;
   color: #4b4;
 }
