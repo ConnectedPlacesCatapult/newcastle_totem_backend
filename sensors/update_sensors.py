@@ -21,6 +21,7 @@ import random
 import json
 import math
 import os
+import sys
 from datetime import datetime
 import random
 import time
@@ -145,7 +146,8 @@ for t_key in totems:
         with open("sensors-totem-"+str(totem_id)+".json") as totem_data:
             totem_data = json.load(totem_data)
     except EnvironmentError:
-        print "Exception when opening sensors-totem-"+str(totem_id)+".json"
+        print "Error when opening sensors-totem-"+str(totem_id)+".json - building from scratch"
+        sys.stdout.flush()
         # TODO - raise alert with mainframe
 
     # For each variable, retrieve data
@@ -265,8 +267,9 @@ for t_key in totems:
 
                     except Exception as e:
                         # TODO: Handle appropriately - log error with Mainframe
-                        print "Error handling area request"
-                        print e
+                        print >> sys.stderr, "Error handling area request"
+                        print >> sys.stderr, e
+                        sys.stderr.flush()
                         continue
 
                 #### Construct the output objects for these vars
@@ -302,7 +305,8 @@ for t_key in totems:
                     # Else, skip and use existing values
                     if var_out["timestamp"] < 0:
                         # TODO Communicate issue to Mainframe to missing value
-                        print "MISSING VARIABLE " + v
+                        print "Totem " + t_key + " - area search is missing variable " + v
+                        sys.stdout.flush()
                         continue
 
                     # Insert this variable data into totem data obj
@@ -311,7 +315,6 @@ for t_key in totems:
             else:
 
                 #### Request live readings for the specified sensor
-                print "Attempting to request from sensor " + source + "..."
                 try:
                     # Make a request for this source
                     # No auth necessary
@@ -321,8 +324,6 @@ for t_key in totems:
                     # If not a network problem, should make a general area call for this sensor's vars
                     # For now, exit, and raise alert with mainframe to be displayed on dash?
                     all_data = req.json()[0]["data"];
-
-                    print " - " + source + " successful"
 
                     # Iterate through this sensor's vars to construct the JSON file
                     for v in vars:
@@ -365,8 +366,9 @@ for t_key in totems:
 
                 except Exception as e:
                     # TODO Alert Mainframe to error
-                    print "Error getting readings for sensor " + source
-                    print e
+                    print >> sys.stderr, "Totem " + t_key + " - error getting readings for sensor " + source
+                    print >> sys.stderr, e
+                    sys.stderr.flush()
                     continue
 
     # SAVE AND UPLOAD THIS OUTFILE
@@ -381,5 +383,3 @@ for t_key in totems:
     )
 
     s3.Bucket(BUCKET_NAME).upload_file('sensors-totem-'+ str(totem_id) +'.json', 'sensors-totem-'+str(totem_id)+'.json', ExtraArgs={'ContentType': "application/json", 'ACL':'public-read'})
-
-    print "Successfully uploaded data for totem " + str(totem_id)
