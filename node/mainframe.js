@@ -811,11 +811,12 @@ io.on('connection', function(socket){
 
   // Totems - interactions and dropout counts for each
   for(k in totems) {
-    var stat = {
-      totem_key: k,
-      dropouts: 0,
-      interactions: 0
-    }
+    // TODO move totem status to another data object?
+    var stat = Object.assign({}, totems[k].status)
+    stat.totem_key = k;
+    stat.dropouts = 0;
+    stat.interactions = 0;
+
     mongoFindCount("logs_status_"+k, {status:false, timestamp: {$gt: tsToday}}, function(err, numDrops) {
       if(!err) {
         stat.dropouts = numDrops;
