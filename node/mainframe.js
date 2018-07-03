@@ -745,12 +745,12 @@ function resetHeartbeatTimer(totem_key, init=false) {
 io.on('connection', function(socket){
 
   // Get timestamp for 4am today (start of totem content day)
-  //var tsToday = getTimestampAtHour(4);
+  var tsToday = getTimestampAtHour(4);
 
   var dashboardInit = {};
 
   // Copy mainframe status
-  dashboardInit.mainframe = mainframeStatus;
+  dashboardInit.liveSince = mainframeStatus.liveSince;
   dashboardInit.totems = totems;
 
   // Send this content
@@ -762,7 +762,7 @@ io.on('connection', function(socket){
     if(!err) {
       mongoFindCount("logs_ili_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
         if(!err) {
-          socket.emit("status_ili_source", {warnings: numWarnings, errors: numErrors});
+          socket.emit("status_ili_source", {live: mainframeStatus.sourcing.ili.live, lastUpdated: mainframeStatus.sourcing.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
         }
       })
     }
@@ -772,7 +772,7 @@ io.on('connection', function(socket){
     if(!err) {
       mongoFindCount("logs_ili_clean", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
         if(!err) {
-          socket.emit("status_ili_clean", {warnings: numWarnings, errors: numErrors});
+          socket.emit("status_ili_clean", {live: mainframeStatus.cleaning.ili.live, lastUpdated: mainframeStatus.cleaning.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
         }
       })
     }
@@ -782,7 +782,7 @@ io.on('connection', function(socket){
     if(!err) {
       mongoFindCount("logs_ili_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
         if(!err) {
-          socket.emit("status_ili_update", {warnings: numWarnings, errors: numErrors});
+          socket.emit("status_ili_update", {live: mainframeStatus.updates.ili.live, lastUpdated: mainframeStatus.updates.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
         }
       })
     }
@@ -793,7 +793,7 @@ io.on('connection', function(socket){
     if(!err) {
       mongoFindCount("logs_sensors_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
         if(!err) {
-          socket.emit("status_sensors_source", {warnings: numWarnings, errors: numErrors});
+          socket.emit("status_sensors_source", {live: mainframeStatus.sourcing.sensors.live, lastUpdated: mainframeStatus.sourcing.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
         }
       })
     }
@@ -803,7 +803,7 @@ io.on('connection', function(socket){
     if(!err) {
       mongoFindCount("logs_sensors_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
         if(!err) {
-          socket.emit("status_sensors_update", {warnings: numWarnings, errors: numErrors});
+          socket.emit("status_sensors_update", {live: mainframeStatus.updates.sensors.live, lastUpdated: mainframeStatus.updates.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
         }
       })
     }
