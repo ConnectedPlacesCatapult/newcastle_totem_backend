@@ -3,6 +3,7 @@
     "id":1,
     "active":false,
     "name":"Ouseburn Valley",
+    "display_url":"www.example.com/ouseburn",
     "lat":54.975194,
     "lon":-1.592056,
     "sensor_sources": {
@@ -34,6 +35,7 @@
     "id":2,
     "active":true,
     "name":"Helix",
+    "display_url":"www.example.com/helix",
     "lat":54.979988,
     "lon":-1.611195,
     "sensor_sources": {
