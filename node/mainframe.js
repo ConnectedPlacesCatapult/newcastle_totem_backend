@@ -681,7 +681,7 @@ function mongoFindCount(collection, query, callback) {
 
 function mongoFind(collection, query, callback) {
   const col = mdb.collection(collection);
-  col.find(query, function(err, res) {
+  col.find(query).toArray(function(err, res) {
     if(err) {
       // TODO handle
     }
