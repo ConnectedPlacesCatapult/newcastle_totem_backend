@@ -679,6 +679,16 @@ function mongoFindCount(collection, query, callback) {
   });
 }
 
+function mongoFind(collection, query, callback) {
+  const col = mdb.collection(collection);
+  col.find(query, function(err, res) {
+    if(err) {
+      // TODO handle
+    }
+    callback(err, res);
+  });
+}
+
 //// MANAGEMENT ////////////////////////////////////////////////////////////////
 
 // to is an array of notification types, e.g. "server", "totem", "general"...
