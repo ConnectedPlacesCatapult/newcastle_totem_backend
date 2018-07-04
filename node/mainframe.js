@@ -839,8 +839,17 @@ io.on('connection', function(socket){
 
   //// Continue from this point
 
-  // TODO Build dashboard page from initContent
-  // TODO Link up controls to request log data
+  socket.on("request_logs", function(collection) {
+
+    var tsToday = getTimestampAtHour(4);
+
+    mongoFind(collection, {timestamp: {$gt: tsToday}}, function(err, data) {
+      if(!err) {
+        // TODO error handling
+        socket.emit("received_logs", data);
+      }
+    });
+  });
 
 
 
