@@ -256,6 +256,7 @@ function buildOverlayTable(data) {
   }
 
   var table = document.createElement("table");
+  table.onclick = 'event.stopPropagation();event.preventDefault();';
   table.appendChild(createTableRow("Time", "Messages", "th"));
 
   for(var i = data.length-1; i >= 0; i--) {
