@@ -17,7 +17,7 @@ function makeConnection() {
   socket.on('init_content', function(data) {
     // Set server status
     document.getElementById("server-status-dot").className = "status live";
-    document.getElementById("server-timestamp").innerHTML = "Last restarted " + getReadableTime(data.liveSince);
+    document.getElementById("server-timestamp").innerHTML = "Last restarted " + getReadableTimeSince(data.liveSince);
 
     totems = data.totems;
     // Set up totems DOM
@@ -30,35 +30,35 @@ function makeConnection() {
   socket.on("status_ili_source", function(data) {
     document.getElementById("ili-source-status").innerHTML = getStatusString(data);
     if(data.lastUpdated) {
-      document.getElementById("ili-source-timestamp").innerHTML = "Last updated " + getReadableTime(data.lastUpdated);
+      document.getElementById("ili-source-timestamp").innerHTML = "Last updated " + getReadableTimeSince(data.lastUpdated);
     }
   })
 
   socket.on("status_ili_clean", function(data) {
     document.getElementById("ili-clean-status").innerHTML = getStatusString(data);
     if(data.lastUpdated) {
-      document.getElementById("ili-clean-timestamp").innerHTML = "Last updated " + getReadableTime(data.lastUpdated);
+      document.getElementById("ili-clean-timestamp").innerHTML = "Last updated " + getReadableTimeSince(data.lastUpdated);
     }
   })
 
   socket.on("status_ili_update", function(data) {
     document.getElementById("ili-update-status").innerHTML = getStatusString(data);
     if(data.lastUpdated) {
-      document.getElementById("ili-update-timestamp").innerHTML = "Last updated " + getReadableTime(data.lastUpdated);
+      document.getElementById("ili-update-timestamp").innerHTML = "Last updated " + getReadableTimeSince(data.lastUpdated);
     }
   })
 
   socket.on("status_sensors_source", function(data) {
     document.getElementById("sensors-source-status").innerHTML = getStatusString(data);
     if(data.lastUpdated) {
-      document.getElementById("sensors-source-timestamp").innerHTML = "Last updated " + getReadableTime(data.lastUpdated);
+      document.getElementById("sensors-source-timestamp").innerHTML = "Last updated " + getReadableTimeSince(data.lastUpdated);
     }
   })
 
   socket.on("status_sensors_update", function(data) {
     document.getElementById("sensors-update-status").innerHTML = getStatusString(data);
     if(data.lastUpdated) {
-      document.getElementById("sensors-update-timestamp").innerHTML = "Last updated " + getReadableTime(data.lastUpdated);
+      document.getElementById("sensors-update-timestamp").innerHTML = "Last updated " + getReadableTimeSince(data.lastUpdated);
     }
   })
 
@@ -70,15 +70,19 @@ function makeConnection() {
       document.getElementById("totem-status-dot-"+data.totem_key).className = "status down";
     }
 
-    document.getElementById("totem-timestamp-"+data.totem_key).innerHTML = "Last made contact " + getReadableTime(data.lastUpdated);
+    document.getElementById("totem-timestamp-"+data.totem_key).innerHTML = "Last made contact " + getReadableTimeSince(data.lastUpdated);
 
     document.getElementById("totem-current-page-"+data.totem_key).innerHTML = data.curPage;
 
-    document.getElementById("totem-last-interaction-"+data.totem_key).innerHTML = getReadableTime(data.lastInteraction) + " ("+data.interactions+" today)";
+    document.getElementById("totem-last-interaction-"+data.totem_key).innerHTML = getReadableTimeSince(data.lastInteraction) + " ("+data.interactions+" today)";
 
     document.getElementById("totem-dropouts-"+data.totem_key).innerHTML = data.dropouts;
 
-  })
+  });
+
+  socket.on("received_logs", function(data) {
+    buildOverlayTable(data);
+  });
 }
 
 function createTotemTile(key, totem) {
@@ -154,7 +158,7 @@ function getStatusString(data) {
   return statString;
 }
 
-function getReadableTime(ts) {
+function getReadableTimeSince(ts) {
 
   if(ts == null) {
     return "[unknown]"
@@ -198,6 +202,27 @@ function getReadableTime(ts) {
   return tString;
 }
 
+function getReadableTime(ts) {
+  if(ts == null) {
+    return "[unknown]"
+  }
+
+  // NOTE: Data older than 24 hours should be handled separately
+  var time = new Date(ts);
+  var hr = time.getHours();
+  var min = time.getMinutes();
+  var dt = time.getDate();
+  var mon = time.getMonth()+1;
+
+  var tString = "";
+  tString += (hr < 10 ? "0"+hr : hr) + ":";
+  tString += (min < 10 ? "0"+min : min) + " on ";
+  tString += (dt < 10 ? "0"+dt : dt) + "/";
+  tString += (mon < 10 ? "0"+mon : mon);
+
+  return tString;
+}
+
 // Check for stored login
 
 // Request socket to server; send login details if we have them
@@ -207,3 +232,70 @@ function getReadableTime(ts) {
 // Functions to update statuses
 
 makeConnection();
+
+//// LOG OVERLAY
+
+function showLogs(collection, title) {
+  // Open the overlay and attempt to get the logs
+  socket.emit("request_logs", collection);
+
+  var container = document.getElementById("overlay-table-container")
+  while(container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+  container.innerHTML = "<h3 class='overlay'>Loading...</h3>"
+
+  document.getElementById("overlay-title").innerHTML = title;
+  document.getElementById("overlay").style.display = "block";
+}
+
+function buildOverlayTable(data) {
+  var container = document.getElementById("overlay-table-container")
+  while(container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+
+  var table = document.createElement("table");
+  table.appendChild(createTableRow("Time", "Messages", "th"));
+
+  for(var i = data.length-1; i >= 0; i--) {
+    table.appendChild(createTableRow(getReadableTime(data[i].timestamp), getFormattedMessages(data[i]), "td"));
+  }
+
+  container.appendChild(table);
+
+  // For each item, set up table of timestamp, warnings and errors
+}
+
+function createTableRow(col1, col2, type) {
+  var tr = document.createElement("tr");
+  var c1 = document.createElement(type);
+  c1.innerHTML = col1;
+  var c2 = document.createElement(type);
+  c2.innerHTML = col2;
+  tr.appendChild(c1);
+  tr.appendChild(c2);
+  return tr;
+}
+
+function getFormattedMessages(data) {
+  var m = "";
+  if(data.warnings) {
+    m += "<span class='warn_text'>Warnings:</span><br>";
+
+    m += data.warnings.join("<br>");
+  }
+  if(data.errors) {
+    if(data.warnings) {
+      m += "<br><br>";
+    }
+    m += "<span class='err_text'>Errors:</span><br>"
+    m += data.errors.join("<br>");
+  }
+
+  return m;
+}
+
+function closeOverlay() {
+  document.getElementById("overlay").style.display = "none";
+}
