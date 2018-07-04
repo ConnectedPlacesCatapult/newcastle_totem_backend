@@ -853,7 +853,7 @@ io.on('connection', function(socket){
 
     var tsToday = getTimestampAtHour(4);
 
-    mongoFind(collection, {timestamp: {$gt: tsToday}}, function(err, data) {
+    mongoFind(collection, {timestamp: {$gt: tsToday}, $or: [ {warnings:{$exists:true}}, {errors:{$exists:true}} ]}, function(err, data) {
       if(!err) {
         // TODO error handling
         socket.emit("received_logs", data);
