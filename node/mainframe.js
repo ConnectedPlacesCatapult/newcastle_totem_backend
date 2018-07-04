@@ -419,8 +419,8 @@ function cleanILI(retry=0, log=null) {
       // Save the log
       mongoInsertOne("logs_ili_clean", log)
 
-      mainframeStatus.sourcing.ili.live = true;
-      mainframeStatus.sourcing.ili.lastUpdated = Date.now();
+      mainframeStatus.cleaning.ili.live = true;
+      mainframeStatus.cleaning.ili.lastUpdated = Date.now();
 
       // Sourced and cleaned data - update ILI
       updateILI();
@@ -435,7 +435,7 @@ function cleanILI(retry=0, log=null) {
         // Save the log
         mongoInsertOne("logs_ili_clean", log)
 
-        mainframeStatus.sourcing.ili.live = false;
+        mainframeStatus.cleaning.ili.live = false;
 
         // Done for now - update ILI content with existing static data
         updateILI()
