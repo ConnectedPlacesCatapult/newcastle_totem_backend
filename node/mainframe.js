@@ -857,17 +857,14 @@ io.on('connection', function(socket){
     stat.interactions = 0;
 
     mongoFindCount("logs_status_"+k, {status:false, timestamp: {$gt: tsToday}}, function(err, numDrops) {
-      if(true) {
-        console.log(err);
+      if(!err) {
         stat.dropouts = numDrops;
         var interactions = 0;
-        mongoFindCount("logs_navigation_"+k, {trigger:{$not: "auto"}, timestamp: {$gt: tsToday}}, function(err, navs) {
-          if(true) {
-            console.log(err);
+        mongoFindCount("logs_navigation_"+k, {trigger:{$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, navs) {
+          if(!err) {
             stat.interactions += navs;
-            mongoFindCount("logs_interaction_"+k, {trigger:{$not: "auto"}, timestamp: {$gt: tsToday}}, function(err, ints) {
-              if(true) {
-                console.log(err);
+            mongoFindCount("logs_interaction_"+k, {trigger:{$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, ints) {
+              if(!err) {
                 stat.interactions += ints;
                 socket.emit("status_totem", stat)
               }
@@ -981,6 +978,12 @@ app.post('/analytics', function(req, res) {
 
   // Unpack any navigation data
   if("navigation" in req.body) {
+
+    // First we have to convert all timestamps to ints
+    for(var i = 0; i < req.body.navigation.length; i++) {
+      req.body.navigation[i].timestamp = parseInt(req.body.navigation[i].timestamp);
+    }
+
     // TODO handle log insert error
     mongoInsertMany("logs_navigation_" + req.body.totem_key, req.body.navigation);
 
@@ -1001,6 +1004,12 @@ app.post('/analytics', function(req, res) {
 
   // Unpack any interaction data
   if("interaction" in req.body) {
+
+    // First we have to convert all timestamps to ints
+    for(var i = 0; i < req.body.interaction.length; i++) {
+      req.body.interaction[i].timestamp = parseInt(req.body.interaction[i].timestamp);
+    }
+
     mongoInsertMany("logs_interaction_" + req.body.totem_key, req.body.interaction);
 
     var lastInteraction = req.body.interaction[req.body.interaction.length-1].timestamp;
