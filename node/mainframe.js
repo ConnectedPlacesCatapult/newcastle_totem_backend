@@ -825,22 +825,31 @@ io.on('connection', function(socket){
     sendTotemStatus(k, socket);
   }
 
+  // Get generic logs (no query)
+  socket.on("request_day_logs", function(collection) {
 
-  //// Continue from this point
+    var tsToday = getTimestampAtHour(4);
 
-  socket.on("request_logs", function(collection) {
+    mongoFind(collection, {}, function(err, data) {
+      if(!err) {
+        // TODO error handling
+        socket.emit("day_logs", data);
+      }
+    });
+  });
+
+  // Get logs for the scripts (errors and warnings)
+  socket.on("request_script_logs", function(collection) {
 
     var tsToday = getTimestampAtHour(4);
 
     mongoFind(collection, {timestamp: {$gt: tsToday}, $or: [ {warnings:{$exists:true}}, {errors:{$exists:true}} ]}, function(err, data) {
       if(!err) {
         // TODO error handling
-        socket.emit("received_logs", data);
+        socket.emit("script_logs", data);
       }
     });
   });
-
-
 
   socket.on("disconnect", function() {
 
