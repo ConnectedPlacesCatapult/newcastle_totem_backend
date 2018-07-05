@@ -848,6 +848,7 @@ io.on('connection', function(socket){
 
 
   function sendTotemStatus(k, socket) {
+    console.log("Sending status for " + k);
 
     // TODO move totem status to another data object?
     var stat = Object.assign({}, totems[k].status)
@@ -856,14 +857,17 @@ io.on('connection', function(socket){
     stat.interactions = 0;
 
     mongoFindCount("logs_status_"+k, {status:false, timestamp: {$gt: tsToday}}, function(err, numDrops) {
-      if(!err) {
+      if(true) {
+        console.log(err);
         stat.dropouts = numDrops;
         var interactions = 0;
         mongoFindCount("logs_navigation_"+k, {trigger:{$not: "auto"}, timestamp: {$gt: tsToday}}, function(err, navs) {
-          if(!err) {
+          if(true) {
+            console.log(err);
             stat.interactions += navs;
             mongoFindCount("logs_interaction_"+k, {trigger:{$not: "auto"}, timestamp: {$gt: tsToday}}, function(err, ints) {
-              if(!err) {
+              if(true) {
+                console.log(err);
                 stat.interactions += ints;
                 socket.emit("status_totem", stat)
               }
