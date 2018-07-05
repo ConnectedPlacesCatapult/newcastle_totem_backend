@@ -1,9 +1,9 @@
 {
   "test": {
     "id":1,
-    "active":false,
+    "active":true,
     "name":"Test Unit",
-    "display_url":"http://www.example.com/test",
+    "display_url":"http://52.56.231.86/test",
     "lat":54.975194,
     "lon":-1.592056,
     "sensor_sources": {
