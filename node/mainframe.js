@@ -822,6 +822,33 @@ io.on('connection', function(socket){
 
   // Totems - interactions and dropout counts for each
   for(k in totems) {
+    sendTotemStatus(k, socket);
+  }
+
+
+  //// Continue from this point
+
+  socket.on("request_logs", function(collection) {
+
+    var tsToday = getTimestampAtHour(4);
+
+    mongoFind(collection, {timestamp: {$gt: tsToday}, $or: [ {warnings:{$exists:true}}, {errors:{$exists:true}} ]}, function(err, data) {
+      if(!err) {
+        // TODO error handling
+        socket.emit("received_logs", data);
+      }
+    });
+  });
+
+
+
+  socket.on("disconnect", function() {
+
+  });
+
+
+  function sendTotemStatus(k, socket) {
+
     // TODO move totem status to another data object?
     var stat = Object.assign({}, totems[k].status)
     stat.totem_key = k;
@@ -846,28 +873,6 @@ io.on('connection', function(socket){
       }
     });
   }
-
-
-  //// Continue from this point
-
-  socket.on("request_logs", function(collection) {
-
-    var tsToday = getTimestampAtHour(4);
-
-    mongoFind(collection, {timestamp: {$gt: tsToday}, $or: [ {warnings:{$exists:true}}, {errors:{$exists:true}} ]}, function(err, data) {
-      if(!err) {
-        // TODO error handling
-        socket.emit("received_logs", data);
-      }
-    });
-  });
-
-
-
-  socket.on("disconnect", function() {
-
-  });
-
 
 
   // socket.on("call_name", function(params) {
