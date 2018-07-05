@@ -328,6 +328,12 @@ for t_key in totems:
                     # Iterate through this sensor's vars to construct the JSON file
                     for v in vars:
 
+                        # Print error if we didn't get this variable
+                        if(v not in all_data):
+                            print "Totem " + t_key + " - Failed to get " + v + " readings from sensor " + source
+                            sys.stdout.flush()
+                            continue
+
                         # Get the static details for this variable
                         v_details = SENSOR_DETAILS[v]
 
@@ -364,9 +370,10 @@ for t_key in totems:
                         ### Add this var to outfile for this totem
                         totem_data[v_details["key"]] = var_out;
 
+
                 except Exception as e:
                     # TODO Alert Mainframe to error
-                    print >> sys.stderr, "Totem " + t_key + " - error getting readings for sensor " + source
+                    print >> sys.stderr, "Totem " + t_key + " - error requesting readings for sensor " + source
                     print >> sys.stderr, e
                     sys.stderr.flush()
                     continue

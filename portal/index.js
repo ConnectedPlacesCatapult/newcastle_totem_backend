@@ -74,14 +74,18 @@ function makeConnection() {
 
     document.getElementById("totem-current-page-"+data.totem_key).innerHTML = data.curPage;
 
-    document.getElementById("totem-last-interaction-"+data.totem_key).innerHTML = getReadableTimeSince(data.lastInteraction) + " ("+data.interactions+" today)";
+    document.getElementById("totem-last-interaction-"+data.totem_key).innerHTML = getReadableTimeSince(data.lastInteraction) + " <span style='color: #999'>("+data.interactions+" today)</span>";
 
     document.getElementById("totem-dropouts-"+data.totem_key).innerHTML = data.dropouts;
 
   });
 
-  socket.on("received_logs", function(data) {
-    buildOverlayTable(data);
+  socket.on("day_logs", function(data) {
+    buildLogTable(data);
+  });
+
+  socket.on("script_logs", function(data) {
+    buildScriptLogTable(data);
   });
 }
 
@@ -116,16 +120,19 @@ function createTotemTile(key, totem) {
   container.appendChild(headerRow);
 
   container.appendChild(createItemRow("Display URL", "totem-url-"+key, "<a href='"+totem.display_url+"'>"+totem.display_url+"</a>"));
-  container.appendChild(createItemRow("Current Page", "totem-current-page-"+key));
-  container.appendChild(createItemRow("Last Interaction", "totem-last-interaction-"+key));
-  container.appendChild(createItemRow("Dropouts Today", "totem-dropouts-"+key));
+  container.appendChild(createItemRow("Current Page", "totem-current-page-"+key, "", function(){ getDayLogs('logs_navigation_'+key, 'Navigation Logs ('+key+')')} ));
+  container.appendChild(createItemRow("Last Interaction", "totem-last-interaction-"+key,"", function(){ getDayLogs('logs_interaction_'+key, 'Page Interactions ('+key+')')} ));
+  container.appendChild(createItemRow("Dropouts Today", "totem-dropouts-"+key, "", function(){ getDayLogs('logs_status_'+key, 'Status Logs ('+key+')')} ));
 
   document.getElementById("page-wrapper").appendChild(container);
 }
 
-function createItemRow(item_name, value_id, value_content="") {
+function createItemRow(item_name, value_id, value_content="", onclick=null) {
   var d = document.createElement("div");
   d.className = "container_row container_item";
+  if(onclick) {
+    d.onclick = onclick;
+  }
   var item = document.createElement("h3");
   item.className = "item";
   item.innerHTML = item_name;
@@ -190,12 +197,14 @@ function getReadableTimeSince(ts) {
   var time = new Date(ts);
   var hr = time.getHours();
   var min = time.getMinutes();
+  var sec = time.getSeconds();
   var dt = time.getDate();
   var mon = time.getMonth()+1;
 
   var tString = "at "
   tString += (hr < 10 ? "0"+hr : hr) + ":";
-  tString += (min < 10 ? "0"+min : min) + " on ";
+  tString += (min < 10 ? "0"+min : min) + ":";
+  tString += (sec < 10 ? "0"+sec : sec) + " on ";
   tString += (dt < 10 ? "0"+dt : dt) + "/";
   tString += (mon < 10 ? "0"+mon : mon);
 
@@ -211,17 +220,21 @@ function getReadableTime(ts) {
   var time = new Date(ts);
   var hr = time.getHours();
   var min = time.getMinutes();
+  var sec = time.getSeconds();
   var dt = time.getDate();
   var mon = time.getMonth()+1;
 
   var tString = "";
   tString += (hr < 10 ? "0"+hr : hr) + ":";
-  tString += (min < 10 ? "0"+min : min) + " on ";
+  tString += (min < 10 ? "0"+min : min) + ":";
+    tString += (sec < 10 ? "0"+sec : sec) + " on ";
   tString += (dt < 10 ? "0"+dt : dt) + "/";
   tString += (mon < 10 ? "0"+mon : mon);
 
   return tString;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 // Check for stored login
 
@@ -233,12 +246,23 @@ function getReadableTime(ts) {
 
 makeConnection();
 
-//// LOG OVERLAY
+//// LOG OVERLAY ///////////////////////////////////////////////////////////////
 
-function showLogs(collection, title) {
+// Get a full log (e.g. totem status) and display all contents
+
+function getDayLogs(collection, title) {
+  socket.emit("request_day_logs", collection);
+  resetOverlay(title);
+}
+
+// Get logs for the script execution (warnings and errors)
+function getScriptLogs(collection, title) {
   // Open the overlay and attempt to get the logs
-  socket.emit("request_logs", collection);
+  socket.emit("request_script_logs", collection);
+  resetOverlay(title);
+}
 
+function resetOverlay(title) {
   var container = document.getElementById("overlay-table-container")
   while(container.firstChild) {
     container.removeChild(container.firstChild);
@@ -249,7 +273,7 @@ function showLogs(collection, title) {
   document.getElementById("overlay").style.display = "block";
 }
 
-function buildOverlayTable(data) {
+function resetLogTable() {
   var container = document.getElementById("overlay-table-container")
   while(container.firstChild) {
     container.removeChild(container.firstChild);
@@ -259,12 +283,23 @@ function buildOverlayTable(data) {
   table.onclick = 'event.stopPropagation();event.preventDefault();';
   table.appendChild(createTableRow("Time", "Messages", "th"));
 
-  for(var i = data.length-1; i >= 0; i--) {
-    table.appendChild(createTableRow(getReadableTime(data[i].timestamp), getFormattedMessages(data[i]), "td"));
-  }
-
   container.appendChild(table);
 
+  return table;
+}
+
+function buildLogTable(data) {
+  var table = resetLogTable();
+  for(var i = data.length-1; i >= 0; i--) {
+    table.appendChild(createTableRow(getReadableTime(data[i].timestamp), getFormattedLog(data[i]), "td"));
+  }
+}
+
+function buildScriptLogTable(data) {
+  var table = resetLogTable();
+  for(var i = data.length-1; i >= 0; i--) {
+    table.appendChild(createTableRow(getReadableTime(data[i].timestamp), getFormattedScriptLog(data[i]), "td"));
+  }
   // For each item, set up table of timestamp, warnings and errors
 }
 
@@ -279,7 +314,18 @@ function createTableRow(col1, col2, type) {
   return tr;
 }
 
-function getFormattedMessages(data) {
+// Basic format of a log into something more readable
+function getFormattedLog(data) {
+  var m = "<span style='font-family:Courier New, monospaced'>";
+  for(k in data) {
+    if(k == "_id" || k == "timestamp") { continue; }
+    m += "<span style='color:#888'>"+k + ":</span> " + data[k] + "<br>";
+  }
+  m += "</span>";
+  return m;
+}
+
+function getFormattedScriptLog(data) {
   var m = "";
   if(data.warnings) {
     m += "<span class='warn_text'>Warnings:</span><br>";

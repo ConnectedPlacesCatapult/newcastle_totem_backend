@@ -830,7 +830,7 @@ io.on('connection', function(socket){
 
     var tsToday = getTimestampAtHour(4);
 
-    mongoFind(collection, {}, function(err, data) {
+    mongoFind(collection, {timestamp: {$gt: tsToday}}, function(err, data) {
       if(!err) {
         // TODO error handling
         socket.emit("day_logs", data);
@@ -1033,6 +1033,11 @@ app.post('/analytics', function(req, res) {
   // Opportunity to send any updates in return
 
   res.send(resObj);
+});
+
+app.post('/status', function(req, res) {
+  // TODO handle a status alert
+  makeLogEntry("Status alert for " + req.body.totem_key + ": " + req.body.alert, "!");
 });
 
 //// SERVER INITIALISATION /////////////////////////////////////////////////////
