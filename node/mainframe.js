@@ -15,6 +15,7 @@ var mdb; // stores persistent DB reference
 // Log writing
 var fs = require('fs');
 var util = require('util');
+
 // Logs new file monthly - store month names
 const logMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
 
