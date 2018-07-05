@@ -1,9 +1,9 @@
 {
-  "ouseburn": {
+  "test": {
     "id":1,
     "active":false,
-    "name":"Ouseburn Valley",
-    "display_url":"http://www.example.com/ouseburn",
+    "name":"Test Unit",
+    "display_url":"http://www.example.com/test",
     "lat":54.975194,
     "lon":-1.592056,
     "sensor_sources": {
