@@ -70,7 +70,7 @@ function makeConnection() {
       document.getElementById("totem-status-dot-"+data.totem_key).className = "status down";
     }
 
-    document.getElementById("totem-timestamp-"+data.totem_key).innerHTML = "Last made contact " + getReadableTimeSince(data.lastUpdated);
+    document.getElementById("totem-timestamp-"+data.totem_key).innerHTML = "Last made contact " + getReadableTimeSince(data.lastContact);
 
     document.getElementById("totem-current-page-"+data.totem_key).innerHTML = data.curPage;
 

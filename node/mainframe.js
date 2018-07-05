@@ -859,10 +859,10 @@ io.on('connection', function(socket){
       if(!err) {
         stat.dropouts = numDrops;
         var interactions = 0;
-        mongoFindCount("logs_navigation_"+k, {status:false, timestamp: {$gt: tsToday}}, function(err, navs) {
+        mongoFindCount("logs_navigation_"+k, {trigger:{$not: "auto"}, timestamp: {$gt: tsToday}}, function(err, navs) {
           if(!err) {
             stat.interactions += navs;
-            mongoFindCount("logs_interaction_"+k, {status:false, timestamp: {$gt: tsToday}}, function(err, ints) {
+            mongoFindCount("logs_interaction_"+k, {trigger:{$not: "auto"}, timestamp: {$gt: tsToday}}, function(err, ints) {
               if(!err) {
                 stat.interactions += ints;
                 socket.emit("status_totem", stat)
@@ -874,10 +874,10 @@ io.on('connection', function(socket){
     });
   }
 
-
   // socket.on("call_name", function(params) {
   //
   // });
+
 });
 
 
