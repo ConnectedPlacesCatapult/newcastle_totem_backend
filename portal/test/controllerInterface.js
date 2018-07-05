@@ -16,7 +16,6 @@ console.log(window);
 
 // Heartbeat interval set as 5 minutes
 const heartbeatInterval = 300000;
-const analyticsEndpoint = "http://52.56.231.86:3000/analytics";
 const controllerEndpoint = "http://localhost:3000";
 
 //// HANDLE INTERACTION LOGGING ////////////////////////////////////////////////
@@ -59,9 +58,8 @@ function resetLog() {
 sendUpdate();
 
 function sendUpdate() {
-  console.log("Attempting to send update");
+  console.log("Attemptng to send update");
   $.post( controllerEndpoint, log, function(res) {
-    console.log(res);
       // Successfully pushed; clear the log
       if("success" in res) {
         log = resetLog();
