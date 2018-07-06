@@ -1,0 +1,6 @@
+{
+  "totem_key": "test",
+  "heartbeatInterval": 300000,
+  "analyticsEndpoint": "http://52.56.231.86:3000/analytics",
+  "statusEndpoint": "http://52.56.231.86:3000/status"
+}
