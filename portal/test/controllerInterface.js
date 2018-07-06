@@ -99,7 +99,7 @@ function handleInteraction(e) {
     var logInt = {
       timestamp: Date.now(),
       page: curPage,
-      subPage: curSubPage,
+      subpage: curSubPage,
       trigger: "touch",
       element_id: el.id,
       x: e.clientX,

@@ -10,10 +10,6 @@ document.addEventListener("click", function(e) { handleInteraction(e) });
 document.addEventListener("touchstart", function(e) { handleInteraction(e) });
 document.addEventListener("keypress", function(e) { handleKeyPress(e) });
 
-
-console.log(window.innerWidth);
-console.log(window);
-
 // Heartbeat interval set as 5 minutes
 const heartbeatInterval = 300000;
 const controllerEndpoint = "http://localhost:3000";
