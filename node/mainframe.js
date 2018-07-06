@@ -690,6 +690,17 @@ function mongoFind(collection, query, callback) {
   });
 }
 
+function mongoFindLatest(collection, callback) {
+  console.log("Getting latest");
+  const col = mdb.collection(collection);
+  col.find(query).limit(1).sort({_id:-1}).toArray(function(err, res) {
+    if(err) {
+      // TODO handle
+    }
+    callback(err, res);
+  });
+}
+
 //// MANAGEMENT ////////////////////////////////////////////////////////////////
 
 // to is an array of notification types, e.g. "server", "totem", "general"...
@@ -988,9 +999,12 @@ app.post('/analytics', function(req, res) {
   // Unpack any navigation data
   if("navigation" in req.body) {
 
-    // First we have to convert all timestamps to ints
+    // Clean the data first - convert timestamp to int, nullify empty strings
+    var n;
     for(var i = 0; i < req.body.navigation.length; i++) {
-      req.body.navigation[i].timestamp = parseInt(req.body.navigation[i].timestamp);
+      n = req.body.navigation[i];
+      n.timestamp = parseInt(n.timestamp);
+      if(n.subpage == "") { n.subpage = null; }
     }
 
     // TODO handle log insert error
@@ -1014,9 +1028,13 @@ app.post('/analytics', function(req, res) {
   // Unpack any interaction data
   if("interaction" in req.body) {
 
-    // First we have to convert all timestamps to ints
+    // First we have to convert all timestamps to ints and empty strings to null
     for(var i = 0; i < req.body.interaction.length; i++) {
-      req.body.interaction[i].timestamp = parseInt(req.body.interaction[i].timestamp);
+      n = req.body.interaction[i];
+      n.timestamp = parseInt(n.timestamp);
+
+      if(n.subpage == "") { n.subpage = null; }
+      if(n.element_id == "") { n.element_id = null; }
     }
 
     mongoInsertMany("logs_interaction_" + req.body.totem_key, req.body.interaction);
@@ -1093,6 +1111,12 @@ function initMainframe() {
     refreshAll();
     //updateSensors();
     //updateILI();
+  } else if(process.argv.includes("test")) {
+    console.log("Running test");
+    mongoFindLatest("logs_interaction_test", function(err, res) {
+      console.log(err);
+      console.log(res);
+    });
   } else {
     // Set timers for regular updates
     makeLogEntry("No init command given; commencing regular updates")
