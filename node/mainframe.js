@@ -25,35 +25,7 @@ var totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
 
 // Store status of the mainframe for quick lookup on dashboard
 // NOTE: Logs for this are stored locally and refreshed daily
-var mainframeStatus = {
-  liveSince: Date.now(),
-  updates: {
-    ili: {
-      live: false,
-      lastUpdated: null,
-    },
-    sensors: {
-      live: false,
-      lastUpdated: null,
-    }
-  },
-  sourcing: {
-    ili: {
-      live: false,
-      lastUpdated: null,
-    },
-    sensors: {
-      live: false,
-      lastUpdated: null,
-    }
-  },
-  cleaning: {
-    ili: {
-      live: false,
-      lastUpdated: null,
-    }
-  }
-}
+var mainframeStatus = {}
 
 var debug = false;
 
@@ -691,12 +663,8 @@ function mongoFind(collection, query, callback) {
 }
 
 function mongoFindLatest(collection, callback) {
-  console.log("Getting latest");
   const col = mdb.collection(collection);
-  col.find(query).limit(1).sort({_id:-1}).toArray(function(err, res) {
-    if(err) {
-      // TODO handle
-    }
+  col.find().limit(1).sort({_id:-1}).toArray(function(err, res) {
     callback(err, res);
   });
 }
@@ -1084,14 +1052,14 @@ function initMainframe() {
 
   makeLogEntry(" *** RESTARTING MAINFRAME *** ")
 
+  // Init mainframe status
+  initMainframeStatus();
+
+
   // Init totem status logging
   for(var t in totems) {
-    totems[t].status = {
-      live: null,
-      lastContact: null,
-      curPage: null,
-      lastInteraction: null
-    }
+
+    initTotemStatus(t);
 
     // Set the heartbeat timer for this totem, with "init" flag set
     // Totem status will remain "null" until a reliable status is received
@@ -1113,10 +1081,7 @@ function initMainframe() {
     //updateILI();
   } else if(process.argv.includes("test")) {
     console.log("Running test");
-    mongoFindLatest("logs_interaction_test", function(err, res) {
-      console.log(err);
-      console.log(res);
-    });
+
   } else {
     // Set timers for regular updates
     makeLogEntry("No init command given; commencing regular updates")
@@ -1132,6 +1097,130 @@ function initMainframe() {
     sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
     sourceILITimer = setTimeout(function() { sourceILI() }, getMillisecondsTilHour(config.sourceILIHour));
   }
+}
+
+function initMainframeStatus() {
+
+  mainframeStatus = {
+    liveSince: Date.now(),
+    updates: {
+      ili: {
+        live: false,
+        lastUpdated: null,
+      },
+      sensors: {
+        live: false,
+        lastUpdated: null,
+      }
+    },
+    sourcing: {
+      ili: {
+        live: false,
+        lastUpdated: null,
+      },
+      sensors: {
+        live: false,
+        lastUpdated: null,
+      }
+    },
+    cleaning: {
+      ili: {
+        live: false,
+        lastUpdated: null,
+      }
+    }
+  }
+
+
+  var tsToday = getTimestampAtHour(4);
+
+  // ILI source
+  mongoFindLatest("logs_ili_source", function(err, res) {
+    if(!err) {
+      if(res.timestamp > tsToday && res.success == true) {
+        mainframeStatus.sourcing.ili.live = true;
+      }
+      mainframeStatus.sourcing.ili.lastUpdated = res.timestamp;
+    }
+  });
+
+  // ILI clean
+  mongoFindLatest("logs_ili_clean", function(err, res) {
+    if(!err) {
+      if(res.timestamp > tsToday && res.success == true) {
+        mainframeStatus.cleaning.ili.live = true;
+      }
+      mainframeStatus.cleaning.ili.lastUpdated = res.timestamp;
+    }
+  });
+
+  // ILI update - get timestamp for update interval
+  var checkILITime = Date.now() - (60000*config.updateILIMinuteInterval)
+  mongoFindLatest("logs_ili_update", function(err, res) {
+    if(!err) {
+      if(res.timestamp > checkILITime && res.success == true) {
+        mainframeStatus.updates.ili.live = true;
+      }
+      mainframeStatus.updates.ili.lastUpdated = res.timestamp;
+    }
+  });
+
+  // Sensors source
+  mongoFindLatest("logs_sensors_source", function(err, res) {
+    if(!err) {
+      if(res.timestamp > tsToday && res.success == true) {
+        mainframeStatus.sourcing.sensors.live = true;
+      }
+      mainframeStatus.sourcing.sensors.lastUpdated = res.timestamp;
+    }
+  });
+
+  // Sensors update
+  var checkSensorsTime = Date.now() - (60000*config.updateSensorsMinuteInterval)
+  mongoFindLatest("logs_sensors_update", function(err, res) {
+    if(!err) {
+      if(res.timestamp > tsToday && res.success == true) {
+        mainframeStatus.updates.sensors.live = true;
+      }
+      mainframeStatus.updates.sensors.lastUpdated = res.timestamp;
+    }
+  });
+}
+
+
+function initTotemStatus(key) {
+
+  totems[key].status = {
+    live: null,
+    lastContact: null,
+    curPage: null,
+    lastInteraction: null
+  }
+
+  mongoFindLatest("logs_status_"+key, function(err, res) {
+    if(!err) {
+      totems[key].status.live = res.status;
+    }
+  });
+
+  mongoFindLatest("logs_navigation_"+key, function(err, res) {
+    if(!err) {
+      totems[key].status.curPage = res.page;
+      if(res.subpage) {
+        totems[key].status.curPage += "_" + res.subpage;
+      }
+
+      totems[key].status.lastInteraction = res.timestamp;
+
+      mongoFindLatest("logs_interaction_"+key, function(err, res) {
+        if(!err) {
+          if(res.timestamp > totems[key].status.lastInteraction) {
+            totems[key].status.lastInteraction = res.timestamp;
+          }
+        }
+      })
+    }
+  });
 }
 
 // Refreshses all content by sourcing, cleaning, and uploading updates
