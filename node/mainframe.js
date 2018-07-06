@@ -665,7 +665,7 @@ function mongoFind(collection, query, callback) {
 function mongoFindLatest(collection, callback) {
   const col = mdb.collection(collection);
   col.find().limit(1).sort({_id:-1}).toArray(function(err, res) {
-    callback(err, res);
+    callback(err, res[0]);
   });
 }
 
@@ -1136,7 +1136,7 @@ function initMainframeStatus() {
 
   // ILI source
   mongoFindLatest("logs_ili_source", function(err, res) {
-    if(!err) {
+    if(res) {
       if(res.timestamp > tsToday && res.success == true) {
         mainframeStatus.sourcing.ili.live = true;
       }
@@ -1146,7 +1146,7 @@ function initMainframeStatus() {
 
   // ILI clean
   mongoFindLatest("logs_ili_clean", function(err, res) {
-    if(!err) {
+    if(res) {
       if(res.timestamp > tsToday && res.success == true) {
         mainframeStatus.cleaning.ili.live = true;
       }
@@ -1157,7 +1157,7 @@ function initMainframeStatus() {
   // ILI update - get timestamp for update interval
   var checkILITime = Date.now() - (60000*config.updateILIMinuteInterval)
   mongoFindLatest("logs_ili_update", function(err, res) {
-    if(!err) {
+    if(res) {
       if(res.timestamp > checkILITime && res.success == true) {
         mainframeStatus.updates.ili.live = true;
       }
@@ -1167,7 +1167,7 @@ function initMainframeStatus() {
 
   // Sensors source
   mongoFindLatest("logs_sensors_source", function(err, res) {
-    if(!err) {
+    if(res) {
       if(res.timestamp > tsToday && res.success == true) {
         mainframeStatus.sourcing.sensors.live = true;
       }
@@ -1178,8 +1178,8 @@ function initMainframeStatus() {
   // Sensors update
   var checkSensorsTime = Date.now() - (60000*config.updateSensorsMinuteInterval)
   mongoFindLatest("logs_sensors_update", function(err, res) {
-    if(!err) {
-      if(res.timestamp > tsToday && res.success == true) {
+    if(res) {
+      if(res.timestamp > checkSensorsTime && res.success == true) {
         mainframeStatus.updates.sensors.live = true;
       }
       mainframeStatus.updates.sensors.lastUpdated = res.timestamp;
@@ -1198,13 +1198,13 @@ function initTotemStatus(key) {
   }
 
   mongoFindLatest("logs_status_"+key, function(err, res) {
-    if(!err) {
+    if(res) {
       totems[key].status.live = res.status;
     }
   });
 
   mongoFindLatest("logs_navigation_"+key, function(err, res) {
-    if(!err) {
+    if(res) {
       totems[key].status.curPage = res.page;
       if(res.subpage) {
         totems[key].status.curPage += "_" + res.subpage;
@@ -1213,7 +1213,7 @@ function initTotemStatus(key) {
       totems[key].status.lastInteraction = res.timestamp;
 
       mongoFindLatest("logs_interaction_"+key, function(err, res) {
-        if(!err) {
+        if(res) {
           if(res.timestamp > totems[key].status.lastInteraction) {
             totems[key].status.lastInteraction = res.timestamp;
           }
