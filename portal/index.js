@@ -19,6 +19,8 @@ function makeConnection() {
     document.getElementById("server-status-dot").className = "status live";
     document.getElementById("server-timestamp").innerHTML = "Last restarted " + getReadableTimeSince(data.liveSince);
 
+    console.log(data);
+
     totems = data.totems;
     // Set up totems DOM
     for(t_key in totems) {
