@@ -72,7 +72,12 @@ function makeConnection() {
 
     document.getElementById("totem-timestamp-"+data.totem_key).innerHTML = "Last made contact " + getReadableTimeSince(data.lastContact);
 
-    document.getElementById("totem-current-page-"+data.totem_key).innerHTML = data.curPage;
+    if(data.live != true) {
+      document.getElementById("totem-current-page-"+data.totem_key).innerHTML = "Unknown ("+data.curPage+")";
+    } else {
+      document.getElementById("totem-current-page-"+data.totem_key).innerHTML = data.curPage;
+    }
+
 
     document.getElementById("totem-last-interaction-"+data.totem_key).innerHTML = getReadableTimeSince(data.lastInteraction) + " <span style='color: #999'>("+data.interactions+" today)</span>";
 
