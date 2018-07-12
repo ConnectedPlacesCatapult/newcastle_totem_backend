@@ -128,7 +128,7 @@ function createTotemTile(key, totem) {
 
   container.appendChild(createItemRow("Display URL", "totem-url-"+key, "<a href='"+totem.display_url+"'>"+totem.display_url+"</a>"));
   container.appendChild(createItemRow("Current Page", "totem-current-page-"+key, "", function(){ getDayLogs('logs_navigation_'+key, 'Navigation Logs ('+key+')')} ));
-  container.appendChild(createItemRow("Last Interaction", "totem-last-interaction-"+key,"", function(){ getDayLogs('logs_interaction_'+key, 'Page Interactions ('+key+')')} ));
+  container.appendChild(createItemRow("Last Interaction", "totem-last-interaction-"+key,"", function(){ getDayInteractionLogs(key, 'Totem Interactions ('+key+')'); } ));
   container.appendChild(createItemRow("Dropouts Today", "totem-dropouts-"+key, "", function(){ getDayLogs('logs_status_'+key, 'Status Logs ('+key+')')} ));
 
   document.getElementById("page-wrapper").appendChild(container);
@@ -196,8 +196,14 @@ function getReadableTimeSince(ts) {
   }
 
   // Else, hours
-  if(ageMS < 7200000) {
-    return "an hour ago";
+  if(ageMS < 86400000) {
+    var t = Math.floor(ageMS / 3600000)
+    if(t == 1) {
+      return "an hour ago";
+    } else {
+      return t + " hours ago";
+    }
+
   }
 
   // NOTE: Data older than 24 hours should be handled separately
@@ -266,6 +272,12 @@ function getDayLogs(collection, title) {
 function getScriptLogs(collection, title) {
   // Open the overlay and attempt to get the logs
   socket.emit("request_script_logs", collection);
+  resetOverlay(title);
+}
+
+function getDayInteractionLogs(key, title) {
+  // Sew together navigation and interaction
+  socket.emit("request_day_interaction_logs", key);
   resetOverlay(title);
 }
 
