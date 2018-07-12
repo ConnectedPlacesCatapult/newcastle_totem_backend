@@ -817,6 +817,27 @@ io.on('connection', function(socket){
     });
   });
 
+  // Get interaction logs for today
+  socket.on("request_day_interaction_logs", function(totemKey) {
+    var tsToday = getTimestampAtHour(4);
+    mongoFind("logs_navigation_"+totemKey, {trigger: {$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, navData) {
+      if(!err) {
+        // TODO error handling
+        mongoFind("logs_navigation_"+totemKey, {trigger: {$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, intData) {
+          if(!err) {
+            // Concat the results together and sort by timestamp descending
+            var data = navData.concat(intData);
+            data.sort(function(a, b) {
+              return b.timestamp - a.timestamp;
+            });
+
+            socket.emit("day_logs", data);
+          }
+        });
+      }
+    });
+  });
+
   // Get logs for the scripts (errors and warnings)
   socket.on("request_script_logs", function(collection) {
 
