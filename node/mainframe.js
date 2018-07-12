@@ -823,12 +823,21 @@ io.on('connection', function(socket){
     mongoFind("logs_navigation_"+totemKey, {trigger: {$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, navData) {
       if(!err) {
         // TODO error handling
-        mongoFind("logs_navigation_"+totemKey, {trigger: {$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, intData) {
+        // Specify that these are navigation
+        for(var i = 0; i < navData.length; i++) {
+          navData[i].type = "NAVIGATION";
+        }
+        mongoFind("logs_interaction_"+totemKey, {trigger: {$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, intData) {
           if(!err) {
+            // Specify that these are interaction
+            for(var i = 0; i < intData.length; i++) {
+              intData[i].type = "INTERACTION";
+            }
+
             // Concat the results together and sort by timestamp descending
             var data = navData.concat(intData);
             data.sort(function(a, b) {
-              return b.timestamp - a.timestamp;
+              return a.timestamp - b.timestamp;
             });
 
             socket.emit("day_logs", data);
