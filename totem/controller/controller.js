@@ -4,6 +4,7 @@ const fs = require("fs");
 const util = require("util");
 const request = require("request");
 const bodyParser = require('body-parser')
+const { spawn } = require('child_process');
 
 // TODO error handling if config is malformed?
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
@@ -46,15 +47,21 @@ app.post('/', function(req, res){
     }
   });
 
-  // Set our web heartbeat timer to fire an alert if the web page is silent
+  // Set our web heartbeat timer to fire an alert if the web page is silent for 30 secs more than we expect
   clearTimeout(pageHeartbeatTimer);
-  pageHeartbeatTimer = setTimeout(function() { alertPageDown(); }, config.heartbeatInterval + 10000);
+  pageHeartbeatTimer = setTimeout(function() { alertPageDown(); }, config.heartbeatInterval + 30000);
 
 });
 
 app.listen(3000, function(){
   console.log('Totem controller listening on port 3000')
 });
+
+//// CHROME MAINTENANCE ////////////////////////////////////////////////////////
+
+const chromeKiosk = spawn('start chrome',['--kiosk', config.display_url]);
+
+////////////////////////////////////////////////////////////////////////////////
 
 // Critical alert! The page is for some reason unresponsive
 function alertPageDown() {
@@ -69,7 +76,7 @@ function alertPageDown() {
     config.statusEndpoint,
     { json: data },
     function (error, response, body) {
-      callback(error, response);
+      // callback(error, response);
     }
   );
 }
