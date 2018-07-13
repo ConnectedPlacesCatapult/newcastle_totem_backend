@@ -26,7 +26,7 @@ var totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
 // Store status of the mainframe for quick lookup on dashboard
 // NOTE: Logs for this are stored locally and refreshed daily
 var mainframeStatus = {}
-
+totemKey
 var debug = false;
 
 // TIMERS
@@ -680,12 +680,12 @@ function sendNotification(type, content=null) {
 
 // Expect totems to send heartbeats every 5 minutes
 
-function alertTotemDown(totem_key) {
+function alertTotemDown(totemKey) {
 
   // Send notifications that totems are down
   sendNotification("totem_down")
 
-  var t = totems[totem_key]
+  var t = totems[totemKey]
 
   // Log the status change in Mongo
   var stat = {
@@ -693,20 +693,20 @@ function alertTotemDown(totem_key) {
     timestamp: Date.now()
   }
 
-  mongoInsertOne("logs_status_"+totem_key, stat, null)
+  mongoInsertOne("logs_status_"+totemKey, stat, null)
 
   t.status.live = false;
 }
 
 
 var heartbeatTimers = {}
-function resetHeartbeatTimer(totem_key, init=false) {
+function resetHeartbeatTimer(totemKey, init=false) {
 
-  var t = totems[totem_key];
+  var t = totems[totemKey];
 
   // Clear timer if exists
-  if(totem_key in heartbeatTimers) {
-    clearTimeout(heartbeatTimers[totem_key]);
+  if(totemKey in heartbeatTimers) {
+    clearTimeout(heartbeatTimers[totemKey]);
   }
 
   // Status now true; if false (or null following initialisation), log that the totem is now live
@@ -718,14 +718,14 @@ function resetHeartbeatTimer(totem_key, init=false) {
       timestamp: Date.now()
     }
 
-    mongoInsertOne("logs_status_"+totem_key, stat)
+    mongoInsertOne("logs_status_"+totemKey, stat)
 
     t.status.live = true;
 
   }
 
   // Set new timer
-  heartbeatTimers[totem_key] = setTimeout(function() { alertTotemDown(totem_key) }, config.minHeartbeatSilence * 60000)
+  heartbeatTimers[totemKey] = setTimeout(function() { alertTotemDown(totemKey) }, config.minHeartbeatSilence * 60000)
 }
 
 //// DASHBOARD (socket.io) /////////////////////////////////////////////////////
@@ -804,6 +804,14 @@ io.on('connection', function(socket){
     sendTotemStatus(k, socket);
   }
 
+  //// TOTEM COMMANDS
+  socket.on("totem_command", data) {
+    addTotemCommand(data)
+    // TODO callback to confirm that it's been queued
+  }
+
+  //// LOGS
+
   // Get generic logs (no query)
   socket.on("request_day_logs", function(collection) {
 
@@ -870,7 +878,7 @@ io.on('connection', function(socket){
 
     // TODO move totem status to another data object?
     var stat = Object.assign({}, totems[k].status)
-    stat.totem_key = k;
+    stat.totemKey = k;
     stat.dropouts = 0;
     stat.interactions = 0;
 
@@ -939,12 +947,10 @@ app.post('/', function(req, res) {
 // Analytics updates are expected every 15 minutes minimum
 app.post('/analytics', function(req, res) {
 
-  resObj = {}
-
   // EXPECTED BODY:
   /*
   {
-    totem_key: [totem key]
+    totemKey: [totem key]
     navigation: [   // Optional
       {
         timestamp
@@ -970,91 +976,171 @@ app.post('/analytics', function(req, res) {
   }
   */
 
-  // Confirm we have an ID
-  if(!("totem_key" in req.body)) {
-    resObj.error = "Missing 'totem_key' field";
+  if(confirmTotemExists(req, res)) {
+
+    var resObj = {}
+
+    // Update this totem's heartbeat monitor
+    var t = totems[req.body.totemKey];
+
+    // Reset the heartbeat timer
+    resetHeartbeatTimer(req.body.totemKey);
+
+    // Log this as the most recent update
+    t.status.lastContact = Date.now();
+
+    // Unpack any navigation data
+    if("navigation" in req.body) {
+
+      // Clean the data first - convert timestamp to int, nullify empty strings
+      var n;
+      for(var i = 0; i < req.body.navigation.length; i++) {
+        n = req.body.navigation[i];
+        n.timestamp = parseInt(n.timestamp);
+        if(n.subpage == "") { n.subpage = null; }
+      }
+
+      // TODO handle log insert error
+      mongoInsertMany("logs_navigation_" + req.body.totemKey, req.body.navigation);
+
+      // Save the totem's current page locally; easier access when needed
+      var lastNav = req.body.navigation[req.body.navigation.length-1];
+      t.status.curPage = lastNav.page
+
+      // Handle subpage, if exists
+      if(lastNav.subPage) {
+        t.status.curPge += " - " + lastNav.subPage;
+      }
+
+      // Update this as the last interaction
+      if(t.status.lastInteraction == null || lastNav.timestamp > t.status.lastInteraction) {
+        t.status.lastInteraction = lastNav.timestamp;
+      }
+    }
+
+    // Unpack any interaction data
+    if("interaction" in req.body) {
+
+      // First we have to convert all timestamps to ints and empty strings to null
+      for(var i = 0; i < req.body.interaction.length; i++) {
+        n = req.body.interaction[i];
+        n.timestamp = parseInt(n.timestamp);
+
+        if(n.subpage == "") { n.subpage = null; }
+        if(n.element_id == "") { n.element_id = null; }
+      }
+
+      mongoInsertMany("logs_interaction_" + req.body.totemKey, req.body.interaction);
+
+      var lastInteraction = req.body.interaction[req.body.interaction.length-1].timestamp;
+      if(t.status.lastInteraction == null || lastInteraction > t.status.lastInteraction) {
+        t.status.lastInteraction = lastInteraction;
+      }
+    }
+
+    resObj.success = "true"
+
+    // UPDATES:
+    // Opportunity to send any updates in return
+    // config: New config file
+    //
+    // UPDATES should have a timestamp associated with them and they should be
+    // confirmed by the totem once they have been successfully applied
+
+    // Attempt to send all updates
+    if(req.body.totemKey in totemCommands) {
+      console.log("Sending totem commands to " + req.body.totemKey);
+      resObj.commands = totemCommands[req.body.totemKey];
+    }
+
     res.send(resObj);
-    return;
-  } else if (!(req.body.totem_key in totems)) {
-    resObj.error = "Totem key " + req.body.totem_key + " not recognised";
-    res.send(resObj);
-    return;
-  } else if(totems[req.body.totem_key].active == false) {
-    resObj.error = "Totem " + req.body.totem_key + " is set 'inactive' in the config; disregarding";
-    res.send(resObj);
-    return;
   }
-
-  // Update this totem's heartbeat monitor
-  var t = totems[req.body.totem_key];
-
-  // Reset the heartbeat timer
-  resetHeartbeatTimer(req.body.totem_key);
-
-  // Log this as the most recent update
-  t.status.lastContact = Date.now();
-
-  // Unpack any navigation data
-  if("navigation" in req.body) {
-
-    // Clean the data first - convert timestamp to int, nullify empty strings
-    var n;
-    for(var i = 0; i < req.body.navigation.length; i++) {
-      n = req.body.navigation[i];
-      n.timestamp = parseInt(n.timestamp);
-      if(n.subpage == "") { n.subpage = null; }
-    }
-
-    // TODO handle log insert error
-    mongoInsertMany("logs_navigation_" + req.body.totem_key, req.body.navigation);
-
-    // Save the totem's current page locally; easier access when needed
-    var lastNav = req.body.navigation[req.body.navigation.length-1];
-    t.status.curPage = lastNav.page
-
-    // Handle subpage, if exists
-    if(lastNav.subPage) {
-      t.status.curPge += " - " + lastNav.subPage;
-    }
-
-    // Update this as the last interaction
-    if(t.status.lastInteraction == null || lastNav.timestamp > t.status.lastInteraction) {
-      t.status.lastInteraction = lastNav.timestamp;
-    }
-  }
-
-  // Unpack any interaction data
-  if("interaction" in req.body) {
-
-    // First we have to convert all timestamps to ints and empty strings to null
-    for(var i = 0; i < req.body.interaction.length; i++) {
-      n = req.body.interaction[i];
-      n.timestamp = parseInt(n.timestamp);
-
-      if(n.subpage == "") { n.subpage = null; }
-      if(n.element_id == "") { n.element_id = null; }
-    }
-
-    mongoInsertMany("logs_interaction_" + req.body.totem_key, req.body.interaction);
-
-    var lastInteraction = req.body.interaction[req.body.interaction.length-1].timestamp;
-    if(t.status.lastInteraction == null || lastInteraction > t.status.lastInteraction) {
-      t.status.lastInteraction = lastInteraction;
-    }
-  }
-
-  resObj.success = "true"
-
-  // TODO
-  // Opportunity to send any updates in return
-
-  res.send(resObj);
 });
 
+// TOTEMS POST TO THIS WITH THE TIMESTAMP OF THE LATEST APPLIED UPDATE
+app.post('/confirm-commands', function(req, res) {
+  if(confirmTotemExists(req, res) && req.body.totemKey in totemCommands) {
+    // Run through the updates and remove them
+    var tKey = req.body.totemKey;
+
+
+
+    if("updated_to" in req.body) {
+      var updatedTo = parseInt(req.body.updated_to);
+
+      console.log("Got confirmation up to " + updatedTo + " for totem " + tKey)
+
+      // Iterate backwards since we're deleting array elements in-place
+      for(var i = totemCommands[tKey].length-1; i >= 0; i--) {
+        if(totemCommands[tKey][i].timestamp <= updatedTo) {
+          totemCommands[tKey].splice(i, 1);
+        }
+      }
+
+      // If we're out of updates, remove the entry entirely
+      if(totemCommands[tKey].length == 0) {
+        delete totemCommands[tKey];
+      }
+
+    }
+    res.send(null);
+  }
+});
+
+function confirmTotemExists(req, res) {
+  if(!("totemKey" in req.body)) {
+    res.send({error: "Missing 'totemKey' field"});
+    return false;
+  } else if (!(req.body.totemKey in totems)) {
+    res.send({error: "Totem key " + req.body.totemKey + " not recognised"});
+    return false;
+  } else if(totems[req.body.totemKey].active == false) {
+    res.send({error: "Totem " + req.body.totemKey + " is set 'inactive' in the config; disregarding"});
+    return false;
+  }
+  return true;
+}
+
+// Status alerts should trigger the appropriate notifications
 app.post('/status', function(req, res) {
   // TODO handle a status alert
-  makeLogEntry("Status alert for " + req.body.totem_key + ": " + req.body.alert, "!");
+  makeLogEntry("Status alert for " + req.body.totemKey + ": " + req.body.alert, "!");
 });
+
+//// TOTEM UPDATES /////////////////////////////////////////////////////////////
+
+/*
+Updates: Applied to the config file for the controller
+{
+  "type": [config, call, any other]
+  "totemKey"
+  "display_url"
+  "heartbeatInterval"
+  "analyticsEndpoint"
+  "statusEndpoint"
+}
+
+Commands: Functions to be executed
+{
+  e.g. playing sound, opening socket, downloading feedback
+}
+*/
+
+var totemCommands = {};
+
+// Form a queue of totem commands, marked by timestamp
+function addTotemCommand(data) {
+
+  console.log("Adding totem command");
+  console.log(data);
+  if(!(data.totemKey in totemCommands)) {
+    totemCommands[data.totemKey] = [];
+  }
+
+  data.command.timestamp = Date.now();
+
+  totemCommands[data.totemKey].push(data.command);
+}
 
 //// SERVER INITIALISATION /////////////////////////////////////////////////////
 
