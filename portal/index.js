@@ -67,23 +67,23 @@ function makeConnection() {
   socket.on("status_totem", function(data) {
     // If null, do neither
     if(data.live == true) {
-      document.getElementById("totem-status-dot-"+data.totem_key).className = "status live";
+      document.getElementById("totem-status-dot-"+data.totemKey).className = "status live";
     } else if(data.live == false) {
-      document.getElementById("totem-status-dot-"+data.totem_key).className = "status down";
+      document.getElementById("totem-status-dot-"+data.totemKey).className = "status down";
     }
 
-    document.getElementById("totem-timestamp-"+data.totem_key).innerHTML = "Last made contact " + getReadableTimeSince(data.lastContact);
+    document.getElementById("totem-timestamp-"+data.totemKey).innerHTML = "Last made contact " + getReadableTimeSince(data.lastContact);
 
     if(data.live != true) {
-      document.getElementById("totem-current-page-"+data.totem_key).innerHTML = "Unknown ("+data.curPage+")";
+      document.getElementById("totem-current-page-"+data.totemKey).innerHTML = "Unknown ("+data.curPage+")";
     } else {
-      document.getElementById("totem-current-page-"+data.totem_key).innerHTML = data.curPage;
+      document.getElementById("totem-current-page-"+data.totemKey).innerHTML = data.curPage;
     }
 
 
-    document.getElementById("totem-last-interaction-"+data.totem_key).innerHTML = getReadableTimeSince(data.lastInteraction) + " <span style='color: #999'>("+data.interactions+" today)</span>";
+    document.getElementById("totem-last-interaction-"+data.totemKey).innerHTML = getReadableTimeSince(data.lastInteraction) + " <span style='color: #999'>("+data.interactions+" today)</span>";
 
-    document.getElementById("totem-dropouts-"+data.totem_key).innerHTML = data.dropouts;
+    document.getElementById("totem-dropouts-"+data.totemKey).innerHTML = data.dropouts;
 
   });
 
@@ -258,6 +258,13 @@ function getReadableTime(ts) {
 // Functions to update statuses
 
 makeConnection();
+
+//// TOTEM COMMANDS ////////////////////////////////////////////////////////////
+
+function sendCommend(key, command) {
+  socket.emit("totem_command", {totemKey: key, command: command});
+}
+
 
 //// LOG OVERLAY ///////////////////////////////////////////////////////////////
 
