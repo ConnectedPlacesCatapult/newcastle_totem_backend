@@ -56,6 +56,20 @@ h3.item {
   float: left;
 }
 
+h3.item-input {
+  float: left;
+  font-weight: bold;
+  line-height: 29px;
+}
+
+h3.submit-status {
+  float: right;
+  text-align: right;
+  margin-right: 32px;
+  font-style: italic;
+  line-height: 36px;
+}
+
 h3.value {
   float: right;
   font-weight: lighter;
@@ -101,8 +115,32 @@ tr:nth-child(even) {
   border-bottom: 1px solid #eee;
 }
 
+#overlay-input-container {
+  position: relative;
+  margin-bottom: 24px;
+  background-color: #fffd;
+}
+
+.overlay-input-row {
+  width: calc(100% - 32px);
+  display: inline-block;
+  padding: 12px 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+input.overlay-input {
+  display: inline;
+  float: right;
+  padding: 6px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 30%;
+}
+
 #overlay-table-container {
   position: relative;
+  display: none;
 }
 
 #overlay {
@@ -112,7 +150,7 @@ tr:nth-child(even) {
   position: fixed;
   z-index: 10;
   display: none;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 #header {
@@ -124,6 +162,29 @@ tr:nth-child(even) {
 #login {
   display: inline;
   float: right;
+}
+
+.submit-enabled:hover {
+  cursor: pointer;
+  background-color: #222;
+}
+
+.submit-enabled {
+  background-color: #666;
+}
+
+.submit-disabled {
+  background-color: #aaa;
+}
+
+.submit {
+  display: inline-block;
+  font-size: 14px;
+  float: right;
+  padding: 12px;
+  width: calc(50% - 12px);
+  border-radius: 4px;
+  color: #fff;
 }
 
 a {
@@ -162,7 +223,22 @@ a.action, a.neutral {
 .container_row {
   width: calc(100% - 32px);
   padding: 12px 16px;
+}
 
+.container_row_expand:hover {
+  background-color: #ee1;
+  cursor: pointer;
+}
+
+.container_row_expand {
+  display: inline;
+  float: right;
+  margin-top: -12px;
+  margin-right: -16px;
+  text-align: center;
+  height: 44px;
+  width: 44px;
+  border-left: 1px solid #ddd;
 }
 
 .container_item:hover {

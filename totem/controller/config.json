@@ -1,15 +1,1 @@
-{
-  "totemKey": "test",
-  "displayURL": "http://52.56.231.86/test",
-  "heartbeatInterval": 300000,
-  "buttonElements": [
-    "nav_1",
-    "nav_2",
-    "nav_3",
-    "nav_4"
-  ],
-  "heartbeatAlertPeriod": 20000,
-  "analyticsEndpoint": "http://52.56.231.86:3000/analytics",
-  "statusEndpoint": "http://52.56.231.86:3000/status",
-  "confirmCommandsEndpoint": "http://52.56.231.86:3000/confirm-commands"
-}
+{"totemKey":"test","displayURL":"http://52.56.231.86/test","heartbeatInterval":300000,"buttonElements":["nav_1","nav_2","nav_3","nav_4"],"heartbeatAlertPeriod":20000,"analyticsEndpoint":"http://52.56.231.86:3000/analytics","statusEndpoint":"http://52.56.231.86:3000/status","confirmCommandsEndpoint":"http://52.56.231.86:3000/confirm-commands"}

@@ -40,8 +40,6 @@ app.post('/', function(req, res){
       if("commands" in r.body) {
         // Run through applying all updates, making note of latest timestamp
         var commandTimestamp = 0;
-        console.log("Got commands");
-        console.log(r.body.commands);
 
         var command;
         var newConfig = false;
@@ -50,7 +48,7 @@ app.post('/', function(req, res){
 
           switch(command.type) {
             case "config": // Handle config updates
-              updateConfig(command.settings);
+              updateConfig(command.config);
               newConfig = true;
               break;
             default:
@@ -166,9 +164,9 @@ function confirmCommands(timestamp) {
 
 }
 
-function updateConfig(settings) {
-  for(s in settings) {
-    config[s] = settings[s];
+function updateConfig(newConfig) {
+  for(c in newConfig) {
+    config[c] = newConfig[c];
   }
 }
 
