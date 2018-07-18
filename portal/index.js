@@ -18,23 +18,12 @@ function makeConnection() {
     socket.disconnect();
   });
 
-  socket.on("login", function(data) {
-    if(data.success) {
-      // Display login success
-      loginToken = data.token;
-      localStorage.setItem("login-token", data.token);
-    } else {
-      // Display error message
-      console.log("Login error: " + data.error);
-    }
-
-  });
+  // Request setup content
+  socket.emit("init_content", loginToken);
 
   socket.on("logout", function(data) {
     console.log("Logged out");
-    // Display message?
-    loginToken = null;
-    localStorage.removeItem("login-token");
+    logout("Authorisation failed; please log in");
   });
 
   socket.on('init_content', function(data) {
@@ -135,6 +124,16 @@ function makeConnection() {
       document.getElementById("overlay-input-submit-msg").className = "submit-status down_text";
     }
   })
+}
+
+function logout(msg=null) {
+  loginToken = null;
+  localStorage.removeItem("login-token");
+  if(msg) {
+    localStorage.setItem("logout-msg", msg);
+  }
+
+  window.location.href = "login.html";
 }
 
 function createTotemTile(key, totem) {
@@ -292,14 +291,11 @@ function getReadableTime(ts) {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Check for stored login
-
-// Request socket to server; send login details if we have them
-
-// On content response, build page - log out if server rejects
-
-// Functions to update statuses
-
-makeConnection();
+if(!loggedIn()) {
+  logout();
+} else {
+  makeConnection();
+}
 
 //// TOTEM COMMANDS ////////////////////////////////////////////////////////////
 

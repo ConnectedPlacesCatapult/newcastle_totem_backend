@@ -3,6 +3,15 @@ const app = express()
 const bodyParser = require('body-parser')
 const { spawn } = require('child_process');
 
+
+//// ADMIN CREDENTIALS - todo, v v basic & insecure
+const bcrypt = require('bcrypt');
+const accessTokens = {}
+const tokenLifetime = 604800000; // 1 week
+// TODO using one single password for now
+const passHash = "2b$10$IWgUneyXkT.XpS2SfI4qj.p.s.G2s4ehBUafgYb/wOnWE9tt.OcKi"
+
+
 // Socket.IO
 var dashboardServer = require("http").createServer();
 var io = require("socket.io")(dashboardServer);
@@ -734,98 +743,110 @@ function resetHeartbeatTimer(totemKey, init=false) {
 
 io.on('connection', function(socket){
 
-  // Get timestamp for 4am today (start of totem content day)
-  var tsToday = getTimestampAtHour(4);
 
-  var dashboardInit = {};
+  socket.on("init_content", token) {
+    if(isAuthorised(token)) {
+      // Get timestamp for 4am today (start of totem content day)
+      var tsToday = getTimestampAtHour(4);
 
-  // Copy mainframe status
-  dashboardInit.liveSince = mainframeStatus.liveSince;
-  dashboardInit.totems = totems;
+      var dashboardInit = {};
 
-  // Send this content
-  socket.emit("init_content", dashboardInit);
+      // Copy mainframe status
+      dashboardInit.liveSince = mainframeStatus.liveSince;
+      dashboardInit.totems = totems;
 
-  // Get current ILI status
-  // TODO choose a better way of doing this? And handle errors
-  mongoFindCount("logs_ili_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-    if(!err) {
-      mongoFindCount("logs_ili_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+      // Send this content
+      socket.emit("init_content", dashboardInit);
+
+      // Get current ILI status
+      // TODO choose a better way of doing this? And handle errors
+      mongoFindCount("logs_ili_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
         if(!err) {
-          socket.emit("status_ili_source", {live: mainframeStatus.sourcing.ili.live, lastUpdated: mainframeStatus.sourcing.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+          mongoFindCount("logs_ili_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+            if(!err) {
+              socket.emit("status_ili_source", {live: mainframeStatus.sourcing.ili.live, lastUpdated: mainframeStatus.sourcing.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+            }
+          })
         }
-      })
-    }
-  });
+      });
 
-  mongoFindCount("logs_ili_clean", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-    if(!err) {
-      mongoFindCount("logs_ili_clean", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+      mongoFindCount("logs_ili_clean", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
         if(!err) {
-          socket.emit("status_ili_clean", {live: mainframeStatus.cleaning.ili.live, lastUpdated: mainframeStatus.cleaning.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+          mongoFindCount("logs_ili_clean", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+            if(!err) {
+              socket.emit("status_ili_clean", {live: mainframeStatus.cleaning.ili.live, lastUpdated: mainframeStatus.cleaning.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+            }
+          })
         }
-      })
-    }
-  });
+      });
 
-  mongoFindCount("logs_ili_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-    if(!err) {
-      mongoFindCount("logs_ili_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+      mongoFindCount("logs_ili_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
         if(!err) {
-          socket.emit("status_ili_update", {live: mainframeStatus.updates.ili.live, lastUpdated: mainframeStatus.updates.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+          mongoFindCount("logs_ili_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+            if(!err) {
+              socket.emit("status_ili_update", {live: mainframeStatus.updates.ili.live, lastUpdated: mainframeStatus.updates.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+            }
+          })
         }
-      })
-    }
-  });
+      });
 
-  // Sensors
-  mongoFindCount("logs_sensors_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-    if(!err) {
-      mongoFindCount("logs_sensors_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+      // Sensors
+      mongoFindCount("logs_sensors_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
         if(!err) {
-          socket.emit("status_sensors_source", {live: mainframeStatus.sourcing.sensors.live, lastUpdated: mainframeStatus.sourcing.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+          mongoFindCount("logs_sensors_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+            if(!err) {
+              socket.emit("status_sensors_source", {live: mainframeStatus.sourcing.sensors.live, lastUpdated: mainframeStatus.sourcing.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+            }
+          })
         }
-      })
-    }
-  });
+      });
 
-  mongoFindCount("logs_sensors_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-    if(!err) {
-      mongoFindCount("logs_sensors_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+      mongoFindCount("logs_sensors_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
         if(!err) {
-          socket.emit("status_sensors_update", {live: mainframeStatus.updates.sensors.live, lastUpdated: mainframeStatus.updates.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+          mongoFindCount("logs_sensors_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+            if(!err) {
+              socket.emit("status_sensors_update", {live: mainframeStatus.updates.sensors.live, lastUpdated: mainframeStatus.updates.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+            }
+          })
         }
-      })
-    }
-  });
+      });
 
-  // Totems - interactions and dropout counts for each
-  for(k in totems) {
-    sendTotemStatus(k, socket);
-  }
-
-  //// ADMIN CREDENTIALS - todo, v v basic & insecure
-
-  // const pHash =
-  // Will be of the form hash: timestamp of expiry. Check before any command
-  const accessTokens = {}
-
-
-  socket.on("login", function(data) {
-    // Confirm login credentials
-    socket.emit("login_accepted");
-  });
-
-  function isAuthorised(token) {
-    if(token in accessTokens) {
-      if(accessTokens[token] < Date.now()) {
-        return true;
+      // Totems - interactions and dropout counts for each
+      for(k in totems) {
+        sendTotemStatus(k, socket);
       }
-      // Remove expired token
-      delete accessTokens[token];
+    } else {
+      socket.emit("logout");
     }
-    return false;
   }
+
+  socket.on("login", function(pass) {
+    var res = {}
+
+    bcrypt.compare(pass, passHash, function(err, res) {
+      if(err) {
+        res.success = false;
+        res.error = err;
+      } else if(res) {
+        res.success = true;
+
+        // Generate token - crude loop method is to ensure uniqueness
+        do {
+          res.token = getAccessToken(16);
+        } while(!(res.token in accessTokens));
+
+        // Add the token to the list of known accessTokens
+        accessTokens[res.token] = Date.now() + tokenLifetime;
+      } else {
+        res.success = false;
+        res.error = "Invalid";
+      }
+      // Confirm login credentials
+      socket.emit("login", res);
+    });
+
+
+  });
 
   //// TOTEM COMMANDS
   socket.on("totem_command", function(data) {
@@ -839,7 +860,7 @@ io.on('connection', function(socket){
   });
 
   socket.on("update_totem_config", function(data) {
-    if(true || isAuthorised(data.token)) {
+    if(isAuthorised(data.token)) {
       if(data.key in totems) {
 
         // Check if we need to update the controller and queue updates
@@ -987,7 +1008,28 @@ io.on('connection', function(socket){
 });
 
 
+function getAccessToken(length) {
+  // Generate a random string
+  var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+  var str = "";
+  for(var i = 0; i < length; i++) {
+    str += alphabet[Math.floor(Math.random()*alphabet.length)];
+  }
+  return str;
+}
 
+function isAuthorised(token) {
+  if(token in accessTokens) {
+    if(accessTokens[token] < Date.now()) {
+      // Refresh the logout timer
+      accessTokens[token] = Date.now() + tokenLifetime;
+      return true;
+    }
+    // Remove expired token
+    delete accessTokens[token];
+  }
+  return false;
+}
 
 // Get the timestamp for a given hour, from the past 24 hours
 function getTimestampAtHour(targetHour) {
