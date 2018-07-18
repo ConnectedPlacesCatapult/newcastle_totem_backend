@@ -40,8 +40,8 @@
     "id":5,
     "active":true,
     "name":"Test Unit 2",
-    "lat":54.975194,
-    "lon":-1.592056,
+    "lat":54.972352,
+    "lon":-1.622857,
     "sensorSources": {
       "local": {
       },
@@ -77,8 +77,8 @@
     "id":2,
     "active":true,
     "name":"Helix",
-    "lat":54.979988,
-    "lon":-1.611195,
+    "lat":54.972352,
+    "lon":-1.622857,
     "sensorSources": {
       "local": {
       },

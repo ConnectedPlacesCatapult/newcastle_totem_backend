@@ -688,7 +688,7 @@ for t_key in totems:
     ## Saving recommendation for further checking and uploading to s3
     uploading_date = datetime.today()
     #print datetime.today()
-    filename = 'recommendation-totem'+totem['id']+'.json'
+    filename = 'recommendation-totem'+str(totem['id'])+'.json'
 
     with open(filename, 'w') as outfile:
         json.dump(recommendation, outfile)
