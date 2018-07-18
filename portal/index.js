@@ -4,6 +4,10 @@ const addr = "http://52.56.231.86:3001"
 
 var totems = null;
 
+var overlayInput = document.getElementById("overlay-input-container");
+var overlayTable = document.getElementById("overlay-table-container");
+
+
 function makeConnection() {
   socket = io(addr);
 
@@ -14,12 +18,28 @@ function makeConnection() {
     socket.disconnect();
   });
 
+  socket.on("login", function(data) {
+    if(data.success) {
+      // Display login success
+      loginToken = data.token;
+      localStorage.setItem("login-token", data.token);
+    } else {
+      // Display error message
+      console.log("Login error: " + data.error);
+    }
+
+  });
+
+  socket.on("logout", function(data) {
+    // Display message?
+    loginToken = null;
+    localStorage.removeItem("login-token");
+  });
+
   socket.on('init_content', function(data) {
     // Set server status
     document.getElementById("server-status-dot").className = "status live";
     document.getElementById("server-timestamp").innerHTML = "Last restarted " + getReadableTimeSince(data.liveSince);
-
-    console.log(data);
 
     totems = data.totems;
     // Set up totems DOM
@@ -94,6 +114,26 @@ function makeConnection() {
   socket.on("script_logs", function(data) {
     buildScriptLogTable(data);
   });
+
+  // Confirm totem config
+  socket.on("update_totem_config", function(data) {
+    // Reset the overlay button
+    document.getElementById("overlay-input-submit").innerHTML = "Submit";
+    document.getElementById("overlay-input-submit").className = "submit submit-enabled";
+
+    // Set the overlay message as appropriate
+    if(data.success) {
+      document.getElementById("overlay-input-submit-msg").innerHTML = "Update successful";
+      document.getElementById("overlay-input-submit-msg").className = "submit-status live_text";
+      // If there are queued instructions, add them to the table?
+      if(data.queue.length) {
+        // TODO Handle in the general case; low priority for now
+      }
+    } else {
+      document.getElementById("overlay-input-submit-msg").innerHTML = "Update error! " + data.error;
+      document.getElementById("overlay-input-submit-msg").className = "submit-status down_text";
+    }
+  })
 }
 
 function createTotemTile(key, totem) {
@@ -126,13 +166,14 @@ function createTotemTile(key, totem) {
 
   container.appendChild(headerRow);
 
-  container.appendChild(createItemRow("Display URL", "totem-url-"+key, "<a href='"+totem.display_url+"'>"+totem.display_url+"</a>"));
+  container.appendChild(createItemRow("Display URL", "totem-url-"+key, "<a href='"+totem.displayURL+"'>"+totem.displayURL+"</a>", function(){ openTotemSettings(key); }));
   container.appendChild(createItemRow("Current Page", "totem-current-page-"+key, "", function(){ getDayLogs('logs_navigation_'+key, 'Navigation Logs ('+key+')')} ));
   container.appendChild(createItemRow("Last Interaction", "totem-last-interaction-"+key,"", function(){ getDayInteractionLogs(key, 'Totem Interactions ('+key+')'); } ));
   container.appendChild(createItemRow("Dropouts Today", "totem-dropouts-"+key, "", function(){ getDayLogs('logs_status_'+key, 'Status Logs ('+key+')')} ));
 
   document.getElementById("page-wrapper").appendChild(container);
 }
+
 
 function createItemRow(item_name, value_id, value_content="", onclick=null) {
   var d = document.createElement("div");
@@ -261,10 +302,121 @@ makeConnection();
 
 //// TOTEM COMMANDS ////////////////////////////////////////////////////////////
 
-function sendCommend(key, command) {
+function sendCommand(key, command) {
   socket.emit("totem_command", {totemKey: key, command: command});
 }
 
+//// OVERLAY ///////////////////////////////////////////////////////////////////
+
+function resetOverlay() {
+
+  // Clear input
+  //while(overlayInput.firstChild) {
+    //overlayInput.removeChild(overlayInput.firstChild);
+  //}
+
+  // Clear log table
+  while(overlayTable.firstChild) {
+    overlayTable.removeChild(overlayTable.firstChild);
+  }
+  overlayTable.innerHTML = "<h3 class='overlay'>Loading...</h3>"
+
+}
+
+function openOverlay(title) {
+  document.getElementById("overlay-title").innerHTML = title;
+  document.getElementById("overlay").style.display = "block";
+}
+
+function closeOverlay() {
+  document.getElementById("overlay").style.display = "none";
+  resetOverlay();
+  overlayInput.style.display = "none";
+  overlayTable.style.display = "none";
+}
+
+function openLoginOverlay() {
+  // TODO
+}
+
+var loginToken = false;
+function loggedIn() {
+  if(localStorage.getItem("login-token")) {
+    loginToken = localStorage.getItem("login-token");
+    return true;
+  }
+  return false;
+}
+
+//// INPUT OVERLAY /////////////////////////////////////////////////////////////
+
+function openTotemSettings(key) {
+
+  // Confirm permission
+  if(false && !loggedIn()) {
+    // If fail, open login screen
+    openLoginOverlay()
+  }
+
+  // Set title
+  document.getElementById("overlay-title-settings").innerHTML = "Totem Configuration ("+key+")";
+
+  // Create input rows for URL and totem ID - others will be added later TODO
+  var container = document.getElementById("overlay-input-rows");
+
+  container.appendChild(buildInputRow(key, "id"));
+  container.appendChild(buildInputRow(key, "displayURL"));
+
+  // Set up the submit button
+  var b = document.getElementById("overlay-input-submit")
+  b.innerHTML = "Submit";
+  b.className = "submit submit-enabled"
+  b.onclick = function() { updateTotemConfig(key); }
+  document.getElementById("overlay-input-submit-msg").innerHTML = "";
+
+  // Open the overlay
+  openOverlay("");
+}
+
+function buildInputRow(key, field) {
+  var r = document.createElement("div");
+  r.className = "overlay-input-row"
+  var label = document.createElement("h3");
+  label.className = "item-input";
+  label.innerHTML = field;
+  var input = document.createElement("input");
+  input.className = "overlay-input";
+  input.id = key + "_" + field;
+  input.value = totems[key][field];
+
+  r.appendChild(label);
+  r.appendChild(input);
+
+  return r;
+}
+
+function updateTotemConfig(key) {
+
+  // Change the button to say it's updating
+  document.getElementById("overlay-input-submit").innerHTML = "Sending...";
+  document.getElementById("overlay-input-submit").className = "submit submit-disabled"
+
+  // Update the totem object and return to backend
+  if(key in totems) {
+
+    totems[key].id = document.getElementById(key + "_id").value;
+    totems[key].controllerConfig.displayURL = document.getElementById(key + "_displayURL").value;
+
+  }
+
+  var data = {
+    token: loginToken,
+    key: key,
+    config: totems[key],
+  }
+
+  socket.emit("update_totem_config", data)
+}
 
 //// LOG OVERLAY ///////////////////////////////////////////////////////////////
 
@@ -272,44 +424,36 @@ function sendCommend(key, command) {
 
 function getDayLogs(collection, title) {
   socket.emit("request_day_logs", collection);
-  resetOverlay(title);
+  overlayTable.style.display = "block";
+  openOverlay(title);
 }
 
 // Get logs for the script execution (warnings and errors)
 function getScriptLogs(collection, title) {
   // Open the overlay and attempt to get the logs
   socket.emit("request_script_logs", collection);
-  resetOverlay(title);
+  overlayTable.style.display = "block";
+  openOverlay(title);
 }
 
 function getDayInteractionLogs(key, title) {
   // Sew together navigation and interaction
   socket.emit("request_day_interaction_logs", key);
-  resetOverlay(title);
-}
-
-function resetOverlay(title) {
-  var container = document.getElementById("overlay-table-container")
-  while(container.firstChild) {
-    container.removeChild(container.firstChild);
-  }
-  container.innerHTML = "<h3 class='overlay'>Loading...</h3>"
-
-  document.getElementById("overlay-title").innerHTML = title;
-  document.getElementById("overlay").style.display = "block";
+  overlayTable.style.display = "block";
+  openOverlay(title);
 }
 
 function resetLogTable() {
-  var container = document.getElementById("overlay-table-container")
-  while(container.firstChild) {
-    container.removeChild(container.firstChild);
+
+  while(overlayTable.firstChild) {
+    overlayTable.removeChild(overlayTable.firstChild);
   }
 
   var table = document.createElement("table");
   table.onclick = 'event.stopPropagation();event.preventDefault();';
   table.appendChild(createTableRow("Time", "Messages", "th"));
 
-  container.appendChild(table);
+  overlayTable.appendChild(table);
 
   return table;
 }
@@ -367,8 +511,4 @@ function getFormattedScriptLog(data) {
   }
 
   return m;
-}
-
-function closeOverlay() {
-  document.getElementById("overlay").style.display = "none";
 }

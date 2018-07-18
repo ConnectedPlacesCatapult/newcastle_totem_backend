@@ -3,10 +3,9 @@
     "id":1,
     "active":true,
     "name":"Test Unit",
-    "display_url":"http://52.56.231.86/test",
     "lat":54.975194,
     "lon":-1.592056,
-    "sensor_sources": {
+    "sensorSources": {
       "local": {
       },
       "remote": {
@@ -29,16 +28,58 @@
           "NO2"
         ]
       }
+    },
+    "controllerConfig": {
+      "displayURL":"http://52.56.231.86/test",
+      "buttonElements": {
+        "default": ["nav_1","nav_2","nav_3","nav_4"]
+      }
+    }
+  },
+  "test2": {
+    "id":5,
+    "active":true,
+    "name":"Test Unit 2",
+    "lat":54.975194,
+    "lon":-1.592056,
+    "sensorSources": {
+      "local": {
+      },
+      "remote": {
+        "AURN_NCA3": [
+          "PM10"
+        ],
+        "aq_monitor915": [
+          "O3"
+        ],
+        "aq_monitor1056100": [
+          "Wind Direction"
+        ],
+        "King%20Gate%20Weather": [
+          "Solar Radiation"
+        ],
+        "new_new_emote_1173": [
+          "CO",
+          "Sound",
+          "Humidity",
+          "NO2"
+        ]
+      }
+    },
+    "controllerConfig": {
+      "displayURL":"http://52.56.231.86/test",
+      "buttonElements": {
+        "default": ["nav_1","nav_2","nav_3","nav_4"]
+      }
     }
   },
   "helix": {
     "id":2,
     "active":true,
     "name":"Helix",
-    "display_url":"http://www.example.com/helix",
     "lat":54.979988,
     "lon":-1.611195,
-    "sensor_sources": {
+    "sensorSources": {
       "local": {
       },
       "remote": {
@@ -60,6 +101,12 @@
         "eml_sensors3_164118": [
           "Wind Direction"
         ]
+      }
+    },
+    "controllerConfig": {
+      "displayURL": "http://52.56.231.86/helix",
+      "buttonElements": {
+        "default": ["nav_1","nav_2","nav_3","nav_4"]
       }
     }
   }

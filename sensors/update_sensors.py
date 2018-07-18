@@ -151,7 +151,7 @@ for t_key in totems:
         # TODO - raise alert with mainframe
 
     # For each variable, retrieve data
-    for locality, sources in totem["sensor_sources"].iteritems():
+    for locality, sources in totem["sensorSources"].iteritems():
         for source, vars in sources.iteritems():
 
             # Source is other - make a request over an area for these vars

@@ -10,11 +10,26 @@
 
   <div id="overlay" onclick="closeOverlay()">
     <div class="wrapper" style="margin-top: 5%; margin-bottom: 5%; text-align: center" onclick="event.stopPropagation();event.preventDefault();">
+      <h2 id="overlay-title-settings" class="overlay">-</h2>
+      <br>
+      <br>
+      <div id="overlay-input-container">
+        <div id="overlay-input-rows">
+
+        </div>
+        <div class="overlay-input-row">
+          <div id="overlay-input-submit" class="submit submit-enabled">
+            Submit
+          </div>
+          <h3 id="overlay-input-submit-msg" class="submit-status live_text"></h3>
+        </div>
+      </div>
+      <br>
       <h2 id="overlay-title" class="overlay">-</h2>
       <br>
       <br>
       <div id="overlay-table-container" class="overlay-table-container">
-        <h3 class="overlay"></h3>
+        <h3 class="overlay">Loading...</h3>
       </div>
 
     </div>

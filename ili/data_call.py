@@ -633,7 +633,7 @@ else:
         action_msg =  weekday_night[random.sample(xrange(len(weekday_night)), 1)[0]]
 
 if "rain" in recommendation[0]['properties'][0]['two_hour_weather_forecast']:
-    action_msg = action_msg + "_" + rainy_prob[random.sample(xrange(len(rainy_prob)), 1)[0]]
+    action_msg = action_msg + "_" + rainy[random.sample(xrange(len(rainy)), 1)[0]]
 else:
     if "clear" in clear and temperature <= 0.2:
         action_msg = action_msg + "_" + sun_cold[random.sample(xrange(len(sun_cold)), 1)[0]]
@@ -681,8 +681,8 @@ uploading_date = datetime.today()
 with open('recommendation-totem-1.json', 'w') as outfile:
     json.dump(recommendation, outfile)
 
-with open('recommendation_'+datetime.strftime( uploading_date, "%Y-%m-%d_%H")+'.json', 'w') as outfile:
-    json.dump(recommendation, outfile)
+#with open('recommendation_'+datetime.strftime( uploading_date, "%Y-%m-%d_%H")+'.json', 'w') as outfile:
+#    json.dump(recommendation, outfile)
 
 ACCESS_KEY_ID = keys["boto3_access_key"]
 ACCESS_SECRET_KEY = keys["boto3_secret_access_key"]

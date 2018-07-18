@@ -26,7 +26,7 @@ var totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
 // Store status of the mainframe for quick lookup on dashboard
 // NOTE: Logs for this are stored locally and refreshed daily
 var mainframeStatus = {}
-totemKey
+
 var debug = false;
 
 // TIMERS
@@ -804,11 +804,90 @@ io.on('connection', function(socket){
     sendTotemStatus(k, socket);
   }
 
-  //// TOTEM COMMANDS
-  socket.on("totem_command", data) {
-    addTotemCommand(data)
-    // TODO callback to confirm that it's been queued
+  //// ADMIN CREDENTIALS - todo, v v basic & insecure
+  Totem Sesame
+  const pHash =
+  // Will be of the form hash: timestamp of expiry. Check before any command
+  const accessTokens = {}
+
+
+  socket.on("login", function(data) {
+    // Confirm login credentials
+    socket.emit("login_accepted");
+  });
+
+  function isAuthorised(token) {
+    if(token in accessTokens) {
+      if(accessTokens[token] < Date.now()) {
+        return true;
+      }
+      // Remove expired token
+      delete accessTokens[token];
+    }
+    return false;
   }
+
+  //// TOTEM COMMANDS
+  socket.on("totem_command", function(data) {
+    if(isAuthorised(data.token)) {
+      addTotemCommand(data)
+      // TODO callback to confirm that it's been queued
+      socket.emit("totem_command_queued");
+    } else {
+      socket.emit("logout");
+    }
+  });
+
+  socket.on("update_totem_config", function(data) {
+    if(isAuthorised(data.token)) {
+      if(data.key in totems) {
+
+        // Check if we need to update the controller and queue updates
+        // TODO This is just a quick-and-dirty approach; individual methods may be preferable
+        var contConf = data.config.controllerConfig;
+        for(var attr in contConf) {
+          if(contConf[attr] != totems[data.key].controllerConfig[attr]) {
+            // There has been an update - queue it
+            var update = {
+              type: "config",
+              totemKey: data.key,
+              config: Object.assign({}, contConf)
+            }
+
+            addTotemCommand(update)
+            break;
+          }
+        }
+
+        // Update the local var
+        totems[data.key] = data.config;
+
+        // Update the config file
+        updateTotemConfig()
+
+        // TODO callback to confirm that it's been queued
+        // Include current queued instructions
+        var res = {
+          success: true,
+          queue: Object.assign([], totemCommands[data.totemKey])
+        }
+
+        socket.emit("update_totem_config", res);
+
+
+
+      } else {
+        var res = {
+          success: false,
+          error: "Totem " + (data.key) + " not recognised",
+        }
+        socket.emit("update_totem_config", res);
+      }
+
+    } else {
+      socket.emit("logout");
+    }
+  });
 
   //// LOGS
 
@@ -1114,7 +1193,7 @@ Updates: Applied to the config file for the controller
 {
   "type": [config, call, any other]
   "totemKey"
-  "display_url"
+  "displayURL"
   "heartbeatInterval"
   "analyticsEndpoint"
   "statusEndpoint"
@@ -1303,7 +1382,6 @@ function initMainframeStatus() {
   });
 }
 
-
 function initTotemStatus(key) {
 
   totems[key].status = {
@@ -1349,4 +1427,9 @@ function refreshAll() {
 
   // Source ILI content
   sourceILI();
+}
+
+// Write the totem config to file, e.g. after an update from the portal
+function updateTotemDetails() {
+  fs.writeFileSync("../totem_details.json", JSON.stringify(totems));
 }
