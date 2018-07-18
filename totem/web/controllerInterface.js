@@ -11,8 +11,8 @@ document.addEventListener("touchstart", function(e) { handleInteraction(e) });
 document.addEventListener("keypress", function(e) { handleKeyPress(e) });
 
 // Heartbeat interval set as 5 minutes
-const heartbeatInterval = 300000;
-const controllerEndpoint = "http://localhost:3000";
+var heartbeatInterval = 300000;
+var controllerEndpoint = "http://localhost:3000";
 
 //// HANDLE INTERACTION LOGGING ////////////////////////////////////////////////
 
@@ -39,7 +39,7 @@ log.navigation.push({
 // Pre-emptively reset nav_trigger to "auto"
 localStorage.setItem("nav_trigger", "auto");
 // Update 'last page' to this current page, to be used on next pageload
-localStorage.setItem("last_page", curPage + (curSubPage == null ? "" : "_" + curSubPage));
+localStorage.setItem("last_page", curPage + (curSubPage == null ? "" : "/" + curSubPage));
 
 function resetLog() {
   return {
@@ -54,7 +54,7 @@ function resetLog() {
 sendUpdate();
 
 function sendUpdate() {
-  console.log("Attemptng to send update");
+
   $.post( controllerEndpoint, log, function(res) {
       // Successfully pushed; clear the log
       if("success" in res) {
@@ -65,9 +65,12 @@ function sendUpdate() {
         console.log(res);
       }
 
-      // Handle any updates returned from the mainframe?
-      if("updates" in res) {
-        // TODO
+      // Handle any updates returned from the mainframe
+      if("config" in res) {
+        heartbeatInterval = parseInt(res.config.heartbeatInterval);
+
+        // Set local storage directive to go to new page at the next screensaver
+
       }
 
     })

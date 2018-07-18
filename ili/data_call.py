@@ -25,6 +25,10 @@ totem_location_1_lon = totem_lon
 totem_location_2_lat = 54.979988
 totem_location_2_lon = -1.611195
 
+## Load totem details from config
+with open('../totem_details.json') as totem_details:
+    totems = json.load(totem_details)
+
 ## Load keys from shared location
 with open('../keys.json') as keys:
     keys = json.load(keys)
@@ -151,10 +155,6 @@ def dark_sky_call(totem_lat, totem_lon):
     two_hours_from_now_clear = data["hourly"]['data'][4]["icon"]
 
     return precipProbability, temperature, clear,two_hours_from_now_precipProbability, two_hours_from_now_temperature,two_hours_from_now_clear
-
-
-## Getting weather data
-weather_data = dark_sky_call(totem_location_1_lat,totem_location_1_lon)
 
 ##### Flipping a biased coin as to weather to generate a recommendation or not
 def flip(p):
@@ -406,7 +406,7 @@ def adding_stopovers(minutes ,totem_lat, totem_lon, recommendation):
         pass
     return recommendation
 
-
+################################################################################
 
 # filtering the previous day recommendation
 try:
@@ -417,6 +417,9 @@ try:
                 places_all = filter(lambda d: d['name'] != recommendation[0]['name'], places_all)
 except Exception, e:
     pass
+
+## Getting weather data
+weather_data = dark_sky_call(totem_location_1_lat,totem_location_1_lon)
 
 recommendation = recommendation_poi(15, totem_location_1_lat, totem_location_1_lon, places_all)
 
