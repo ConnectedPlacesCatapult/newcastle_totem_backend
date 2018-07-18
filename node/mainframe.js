@@ -805,8 +805,8 @@ io.on('connection', function(socket){
   }
 
   //// ADMIN CREDENTIALS - todo, v v basic & insecure
-  Totem Sesame
-  const pHash =
+
+  // const pHash =
   // Will be of the form hash: timestamp of expiry. Check before any command
   const accessTokens = {}
 
@@ -839,7 +839,7 @@ io.on('connection', function(socket){
   });
 
   socket.on("update_totem_config", function(data) {
-    if(isAuthorised(data.token)) {
+    if(true || isAuthorised(data.token)) {
       if(data.key in totems) {
 
         // Check if we need to update the controller and queue updates
@@ -863,7 +863,7 @@ io.on('connection', function(socket){
         totems[data.key] = data.config;
 
         // Update the config file
-        updateTotemConfig()
+        updateTotemDetails()
 
         // TODO callback to confirm that it's been queued
         // Include current queued instructions
@@ -1216,9 +1216,9 @@ function addTotemCommand(data) {
     totemCommands[data.totemKey] = [];
   }
 
-  data.command.timestamp = Date.now();
+  data.timestamp = Date.now();
 
-  totemCommands[data.totemKey].push(data.command);
+  totemCommands[data.totemKey].push(data);
 }
 
 //// SERVER INITIALISATION /////////////////////////////////////////////////////

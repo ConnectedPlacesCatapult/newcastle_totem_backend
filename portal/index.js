@@ -31,6 +31,7 @@ function makeConnection() {
   });
 
   socket.on("logout", function(data) {
+    console.log("Logged out");
     // Display message?
     loginToken = null;
     localStorage.removeItem("login-token");
@@ -166,7 +167,7 @@ function createTotemTile(key, totem) {
 
   container.appendChild(headerRow);
 
-  container.appendChild(createItemRow("Display URL", "totem-url-"+key, "<a href='"+totem.displayURL+"'>"+totem.displayURL+"</a>", function(){ openTotemSettings(key); }));
+  container.appendChild(createItemRow("Display URL", "totem-url-"+key, "<a href='"+totem.controllerConfig.displayURL+"'>"+totem.controllerConfig.displayURL+"</a>", function(){ openTotemSettings(key); }));
   container.appendChild(createItemRow("Current Page", "totem-current-page-"+key, "", function(){ getDayLogs('logs_navigation_'+key, 'Navigation Logs ('+key+')')} ));
   container.appendChild(createItemRow("Last Interaction", "totem-last-interaction-"+key,"", function(){ getDayInteractionLogs(key, 'Totem Interactions ('+key+')'); } ));
   container.appendChild(createItemRow("Dropouts Today", "totem-dropouts-"+key, "", function(){ getDayLogs('logs_status_'+key, 'Status Logs ('+key+')')} ));
@@ -364,8 +365,8 @@ function openTotemSettings(key) {
   // Create input rows for URL and totem ID - others will be added later TODO
   var container = document.getElementById("overlay-input-rows");
 
-  container.appendChild(buildInputRow(key, "id"));
-  container.appendChild(buildInputRow(key, "displayURL"));
+  container.appendChild(buildInputRow(key, "id", totems[key].id));
+  container.appendChild(buildInputRow(key, "displayURL", totems[key].controllerConfig.displayURL));
 
   // Set up the submit button
   var b = document.getElementById("overlay-input-submit")
@@ -378,7 +379,7 @@ function openTotemSettings(key) {
   openOverlay("");
 }
 
-function buildInputRow(key, field) {
+function buildInputRow(key, field, value) {
   var r = document.createElement("div");
   r.className = "overlay-input-row"
   var label = document.createElement("h3");
@@ -387,7 +388,7 @@ function buildInputRow(key, field) {
   var input = document.createElement("input");
   input.className = "overlay-input";
   input.id = key + "_" + field;
-  input.value = totems[key][field];
+  input.value = value;
 
   r.appendChild(label);
   r.appendChild(input);

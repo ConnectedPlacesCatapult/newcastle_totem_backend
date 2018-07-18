@@ -30,7 +30,6 @@ app.post('/', function(req, res){
 
   // Set up object to send to frontend - will include any new config settings
   resObj = {}
-  resObj.heartbeatInterval = config.heartbeatInterval;
 
   // Send analytics data to the backend
   sendUpdate(req.body, function(e, r) {
@@ -40,7 +39,8 @@ app.post('/', function(req, res){
       if("commands" in r.body) {
         // Run through applying all updates, making note of latest timestamp
         var commandTimestamp = 0;
-
+        console.log("Got commands");
+        console.log(r.body.commands);
         var command;
         var newConfig = false;
         for(var i = 0; i < r.body.commands.length; i++) {
@@ -67,15 +67,20 @@ app.post('/', function(req, res){
           applyConfig();
 
           // Send relevant config settings to the frontend to be applied
-          resObj.displayURL = config.displayURL;
-          resObj.heartbeatInterval = config.heartbeatInterval;
         }
 
         // Confirm commands received
         confirmCommands(commandTimestamp);
       }
 
+      // Send config details to page
+      // Sends on every opportunity to be certain it's received
+      resObj.displayURL = config.displayURL;
+      resObj.buttonElements = Object.assign({}, config.buttonElements);
+      resObj.heartbeatInterval = config.heartbeatInterval;
+
       resObj.success = true;
+
       res.send(resObj);
     } else {
       // TODO handle errors
