@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 const accessTokens = {}
 const tokenLifetime = 604800000; // 1 week
 // TODO using one single password for now
-const passHash = "2b$10$IWgUneyXkT.XpS2SfI4qj.p.s.G2s4ehBUafgYb/wOnWE9tt.OcKi"
+const passHash = "$2b$10$ywcc2oEtXavteJdRkcQWJeotcQhbH9i5ij28tx6AS2Fcmlfv1pr1m"
 
 
 // Socket.IO
@@ -744,7 +744,7 @@ function resetHeartbeatTimer(totemKey, init=false) {
 io.on('connection', function(socket){
 
 
-  socket.on("init_content", token) {
+  socket.on("init_content", function(token) {
     if(isAuthorised(token)) {
       // Get timestamp for 4am today (start of totem content day)
       var tsToday = getTimestampAtHour(4);
@@ -818,22 +818,22 @@ io.on('connection', function(socket){
     } else {
       socket.emit("logout");
     }
-  }
+  });
 
   socket.on("login", function(pass) {
     var res = {}
 
-    bcrypt.compare(pass, passHash, function(err, res) {
+    bcrypt.compare(pass, passHash, function(err, success) {
       if(err) {
         res.success = false;
         res.error = err;
-      } else if(res) {
+      } else if(success) {
         res.success = true;
 
         // Generate token - crude loop method is to ensure uniqueness
         do {
           res.token = getAccessToken(16);
-        } while(!(res.token in accessTokens));
+        } while(res.token in accessTokens);
 
         // Add the token to the list of known accessTokens
         accessTokens[res.token] = Date.now() + tokenLifetime;
@@ -1020,7 +1020,7 @@ function getAccessToken(length) {
 
 function isAuthorised(token) {
   if(token in accessTokens) {
-    if(accessTokens[token] < Date.now()) {
+    if(accessTokens[token] > Date.now()) {
       // Refresh the logout timer
       accessTokens[token] = Date.now() + tokenLifetime;
       return true;
