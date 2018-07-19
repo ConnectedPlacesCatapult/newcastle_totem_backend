@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="icon" href="favicon.png" type="favicon"/>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+
+  <style>
+    .login {
+      width: calc(80% - 16px);
+      display: inline;
+      float: left;
+      padding: 8px;
+      border: none;
+      border-bottom: 1px solid #222;
+    }
+
+    h4.login-title {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bolder;
+      margin-bottom: 32px;
+    }
+
+    #login-submit {
+      width: calc(20%-16px);
+      padding: 8px;
+      display: inline;
+      float: right;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="wrapper" style="width: 400px">
+    <div class="container" style="padding: 16px; margin-top: 30vh; display: inline-block">
+      <h4 class="login-title">Enter password</h4>
+      <form onsubmit="return login();">
+        <input id="login-pass" class="login" type="password" placeholder="Enter password"></input>
+        <input id="login-submit" type="submit" value="Log in"></input>
+      </form>
+    </div>
+    <h4 id="error" class="login-title down_text"></h4>
+  </div>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+<script>
+
+  if(localStorage.getItem("logout-msg")) {
+    document.getElementById("error").innerHTML = localStorage.getItem("logout-msg");
+    localStorage.removeItem("logout-msg");
+  }
+
+  function login() {
+
+    document.getElementById("error").innerHTML = ""
+
+    // Init socket to mainframe
+    const addr = "http://52.56.231.86:3001"
+    const socket = io(addr);
+
+    socket.io.on('connect_error', function(e) {
+      console.log("No connection!");
+      // Server is down!
+      document.getElementById("error").innerHTML = "Could not connect";
+      socket.disconnect();
+    });
+
+    // Send the password
+    var pass = document.getElementById("login-pass").value;
+    console.log("Emitting " + pass);
+    socket.emit("login", pass);
+
+    // Parse response
+    socket.on("login", function(data) {
+      console.log(data);
+      if(data.success) {
+        // Display login success
+        localStorage.setItem("login-token", data.token);
+        window.location.href = "index.html"
+      } else {
+        // Display error message
+        document.getElementById("error").innerHTML = data.error
+      }
+
+    });
+
+    return false;
+  }
+</script>
+
+</html>

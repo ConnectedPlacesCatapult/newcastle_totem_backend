@@ -7,6 +7,7 @@ var totems = null;
 var overlayInput = document.getElementById("overlay-input-container");
 var overlayTable = document.getElementById("overlay-table-container");
 
+var loginToken = null;
 
 function makeConnection() {
   socket = io(addr);
@@ -336,7 +337,6 @@ function openLoginOverlay() {
   // TODO
 }
 
-var loginToken = false;
 function loggedIn() {
   if(localStorage.getItem("login-token")) {
     loginToken = localStorage.getItem("login-token");
@@ -411,6 +411,8 @@ function updateTotemConfig(key) {
     key: key,
     config: totems[key],
   }
+
+  console.log(loginToken);
 
   socket.emit("update_totem_config", data)
 }
