@@ -976,6 +976,8 @@ io.on('connection', function(socket){
   function sendTotemStatus(k, socket) {
     console.log("Sending status for " + k);
 
+    var tsToday = getTimestampAtHour(4);
+
     // TODO move totem status to another data object?
     var stat = Object.assign({}, totems[k].status)
     stat.totemKey = k;

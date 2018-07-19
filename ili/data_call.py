@@ -683,7 +683,7 @@ for t_key in totems:
     #print action_msg
 
     recommendation[0]['action_msg'] = action_msg
-    recommendation[0]['totem_coords'] = [totem["lat"], totem["lon"]]
+    recommendation[0]['totem_coords'] = [totem["lon"], totem["lat"]]
 
     ## Saving recommendation for further checking and uploading to s3
     uploading_date = datetime.today()
