@@ -116,6 +116,10 @@ tr:nth-child(even) {
 }
 
 #overlay-input-container {
+  display: none;
+}
+
+#overlay-list-container {
   position: relative;
   margin-bottom: 24px;
   background-color: #fffd;

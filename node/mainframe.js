@@ -119,6 +119,12 @@ function sourceSensors(retry=0, log=null) {
       sourceSensorsTimer = setTimeout(function() { sourceSensors() }, getMillisecondsTilHour(config.sourceSensorsHour));
       updateSensors();
 
+      // If there are sockets, send
+      if(clientConnections) {
+        sendSensorsSourceStatus();
+      }
+
+
     } else {
       // If fail, retry twice, then raise an error and wait a day
       if(retry >= 2) {
@@ -138,6 +144,10 @@ function sourceSensors(retry=0, log=null) {
 
         // Done for now - refresh sensors
         updateSensors();
+        // If there are sockets, send
+        if(clientConnections) {
+          sendSensorsSourceStatus();
+        }
 
       } else {
         // Wait 10 secs and retry
@@ -215,6 +225,12 @@ function updateSensors(retry=0, log=null) {
       mainframeStatus.updates.sensors.lastUpdated = Date.now();
 
       makeLogEntry("Successfully updated sensor content", "S")
+
+      // If there are sockets, send update
+      if(clientConnections) {
+        sendSensorsUpdateStatus();
+      }
+
     } else {
       // If fail, retry three times, then raise an alert and wait til the next interval
       if(retry >= 2) {
@@ -226,6 +242,11 @@ function updateSensors(retry=0, log=null) {
         mongoInsertOne("logs_sensors_update", log)
 
         mainframeStatus.updates.sensors.live = false;
+
+        // If there are sockets, send update
+        if(clientConnections) {
+          sendSensorsUpdateStatus();
+        }
 
         // Set timer to try next time
         updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
@@ -316,6 +337,11 @@ function sourceILI(retry=0, log=null) {
       // Initialise data cleaning
       cleanILI();
 
+      // If there are sockets, send update
+      if(clientConnections) {
+        sendILISourceStatus();
+      }
+
     } else {
       // If fail, retry twice, then raise an error and wait a day
       if(retry >= 2) {
@@ -332,6 +358,11 @@ function sourceILI(retry=0, log=null) {
 
         // Done for now - update ILI content with existing static data
         updateILI()
+
+        // If there are sockets, send update
+        if(clientConnections) {
+          sendILISourceStatus();
+        }
       } else {
         // Wait 10 secs and retry
         makeLogEntry("Failed to source ILI content - retrying...", "F")
@@ -407,6 +438,11 @@ function cleanILI(retry=0, log=null) {
       // Sourced and cleaned data - update ILI
       updateILI();
 
+      // If there are sockets, send update
+      if(clientConnections) {
+        sendILICleanStatus();
+      }
+
     } else {
       // If fail, retry twice, then raise an error and wait a day
       if(retry >= 2) {
@@ -421,6 +457,12 @@ function cleanILI(retry=0, log=null) {
 
         // Done for now - update ILI content with existing static data
         updateILI()
+
+        // If there are sockets, send update
+        if(clientConnections) {
+          sendILICleanStatus();
+        }
+
       } else {
         // Wait 10 secs and retry
         makeLogEntry("Failed to clean ILI content - retrying...", "F")
@@ -496,6 +538,11 @@ function updateILI(retry=0, log=null) {
       // Sourced and cleaned data - update ILI
       updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
 
+      // If there are sockets, send update
+      if(clientConnections) {
+        sendILIUpdateStatus();
+      }
+
     } else {
       // If fail, retry twice, then raise an error and wait a day
       if(retry >= 2) {
@@ -511,6 +558,11 @@ function updateILI(retry=0, log=null) {
 
         // Done for now - attempt to update next time
         updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
+
+        // If there are sockets, send update
+        if(clientConnections) {
+          sendILIUpdateStatus();
+        }
       } else {
         // Wait 10 secs and retry
         makeLogEntry("Failed - retrying...", "F")
@@ -740,14 +792,15 @@ function resetHeartbeatTimer(totemKey, init=false) {
 //// DASHBOARD (socket.io) /////////////////////////////////////////////////////
 
 // db.logs_ili_update.find({success:false, timestamp: { $gt: 1530255257410 } } ).count()
+var clientConnections = 0;
 
 io.on('connection', function(socket){
 
+  clientConnections++;
 
   socket.on("init_content", function(token) {
     if(isAuthorised(token)) {
       // Get timestamp for 4am today (start of totem content day)
-      var tsToday = getTimestampAtHour(4);
 
       var dashboardInit = {};
 
@@ -758,58 +811,13 @@ io.on('connection', function(socket){
       // Send this content
       socket.emit("init_content", dashboardInit);
 
-      // Get current ILI status
-      // TODO choose a better way of doing this? And handle errors
-      mongoFindCount("logs_ili_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-        if(!err) {
-          mongoFindCount("logs_ili_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
-            if(!err) {
-              socket.emit("status_ili_source", {live: mainframeStatus.sourcing.ili.live, lastUpdated: mainframeStatus.sourcing.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
-            }
-          })
-        }
-      });
+      // Pull all status reports
+      sendILISourceStatus(socket);
+      sendILICleanStatus(socket);
+      sendILIUpdateStatus(socket);
+      sendSensorsSourceStatus(socket);
+      sendSensorsUpdateStatus(socket);
 
-      mongoFindCount("logs_ili_clean", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-        if(!err) {
-          mongoFindCount("logs_ili_clean", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
-            if(!err) {
-              socket.emit("status_ili_clean", {live: mainframeStatus.cleaning.ili.live, lastUpdated: mainframeStatus.cleaning.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
-            }
-          })
-        }
-      });
-
-      mongoFindCount("logs_ili_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-        if(!err) {
-          mongoFindCount("logs_ili_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
-            if(!err) {
-              socket.emit("status_ili_update", {live: mainframeStatus.updates.ili.live, lastUpdated: mainframeStatus.updates.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
-            }
-          })
-        }
-      });
-
-      // Sensors
-      mongoFindCount("logs_sensors_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-        if(!err) {
-          mongoFindCount("logs_sensors_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
-            if(!err) {
-              socket.emit("status_sensors_source", {live: mainframeStatus.sourcing.sensors.live, lastUpdated: mainframeStatus.sourcing.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
-            }
-          })
-        }
-      });
-
-      mongoFindCount("logs_sensors_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-        if(!err) {
-          mongoFindCount("logs_sensors_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
-            if(!err) {
-              socket.emit("status_sensors_update", {live: mainframeStatus.updates.sensors.live, lastUpdated: mainframeStatus.updates.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
-            }
-          })
-        }
-      });
 
       // Totems - interactions and dropout counts for each
       for(k in totems) {
@@ -894,8 +902,7 @@ io.on('connection', function(socket){
         }
 
         socket.emit("update_totem_config", res);
-
-
+        sendTotemStatus(data.key, socket);
 
       } else {
         var res = {
@@ -957,7 +964,6 @@ io.on('connection', function(socket){
 
   // Get logs for the scripts (errors and warnings)
   socket.on("request_script_logs", function(collection) {
-
     var tsToday = getTimestampAtHour(4);
 
     mongoFind(collection, {timestamp: {$gt: tsToday}, $or: [ {warnings:{$exists:true}}, {errors:{$exists:true}} ]}, function(err, data) {
@@ -969,12 +975,103 @@ io.on('connection', function(socket){
   });
 
   socket.on("disconnect", function() {
-
+    clientConnections--;
+    if(clientConnections < 0) {
+      clientConnections = 0;
+    }
   });
 
+  function sendILISourceStatus(socket=null) {
+    // Get current ILI status
+    // TODO choose a better way of doing this? And handle errors
+    var tsToday = getTimestampAtHour(4);
+    mongoFindCount("logs_ili_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+      if(!err) {
+        mongoFindCount("logs_ili_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+          if(!err) {
+            if(socket) {
+              socket.emit("status_ili_source", {live: mainframeStatus.sourcing.ili.live, lastUpdated: mainframeStatus.sourcing.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+            } else {
+              io.sockets.emit("status_ili_source", {live: mainframeStatus.sourcing.ili.live, lastUpdated: mainframeStatus.sourcing.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+            }
+          }
+        })
+      }
+    });
+  }
 
-  function sendTotemStatus(k, socket) {
-    console.log("Sending status for " + k);
+  function sendILICleanStatus(socket=null) {
+    var tsToday = getTimestampAtHour(4);
+    mongoFindCount("logs_ili_clean", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+      if(!err) {
+        mongoFindCount("logs_ili_clean", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+          if(!err) {
+            if(socket) {
+              socket.emit("status_ili_clean", {live: mainframeStatus.cleaning.ili.live, lastUpdated: mainframeStatus.cleaning.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+            } else {
+              io.sockets.emit("status_ili_clean", {live: mainframeStatus.cleaning.ili.live, lastUpdated: mainframeStatus.cleaning.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+            }
+
+          }
+        })
+      }
+    });
+  }
+
+  function sendILIUpdateStatus(socket=null) {
+    var tsToday = getTimestampAtHour(4);
+    mongoFindCount("logs_ili_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+      if(!err) {
+        mongoFindCount("logs_ili_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+          if(!err) {
+            if(socket) {
+              socket.emit("status_ili_update", {live: mainframeStatus.updates.ili.live, lastUpdated: mainframeStatus.updates.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+            } else {
+              io.sockets.emit("status_ili_update", {live: mainframeStatus.updates.ili.live, lastUpdated: mainframeStatus.updates.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+            }
+          }
+        })
+      }
+    });
+  }
+
+  function sendSensorsSourceStatus(socket=null) {
+    var tsToday = getTimestampAtHour(4);
+    mongoFindCount("logs_sensors_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+      if(!err) {
+        mongoFindCount("logs_sensors_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+          if(!err) {
+            if(socket) {
+              socket.emit("status_sensors_source", {live: mainframeStatus.sourcing.sensors.live, lastUpdated: mainframeStatus.sourcing.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+            } else {
+              io.sockets.emit("status_sensors_source", {live: mainframeStatus.sourcing.sensors.live, lastUpdated: mainframeStatus.sourcing.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+            }
+          }
+        })
+      }
+    });
+  }
+
+  function sendSensorsUpdateStatus(socket=null) {
+    var tsToday = getTimestampAtHour(4);
+    mongoFindCount("logs_sensors_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+      if(!err) {
+        mongoFindCount("logs_sensors_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+          if(!err) {
+            if(socket) {
+              socket.emit("status_sensors_update", {live: mainframeStatus.updates.sensors.live, lastUpdated: mainframeStatus.updates.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+            } else {
+              io.sockets.emit("status_sensors_update", {live: mainframeStatus.updates.sensors.live, lastUpdated: mainframeStatus.updates.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+            }
+          }
+        })
+      }
+    });
+  }
+
+  function sendTotemStatus(k, socket=null) {
+
+    var tsToday = getTimestampAtHour(4);
 
     // TODO move totem status to another data object?
     var stat = Object.assign({}, totems[k].status)
@@ -992,7 +1089,13 @@ io.on('connection', function(socket){
             mongoFindCount("logs_interaction_"+k, {trigger:{$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, ints) {
               if(!err) {
                 stat.interactions += ints;
-                socket.emit("status_totem", stat)
+                if(socket) {
+                  // Return a pull
+                  socket.emit("status_totem", stat)
+                } else {
+                  // Push update
+                  io.sockets.emit("status_totem", stat);
+                }
               }
             });
           }
