@@ -981,134 +981,134 @@ io.on('connection', function(socket){
     }
   });
 
-  function sendILISourceStatus(socket=null) {
-    // Get current ILI status
-    // TODO choose a better way of doing this? And handle errors
-    var tsToday = getTimestampAtHour(4);
-    mongoFindCount("logs_ili_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-      if(!err) {
-        mongoFindCount("logs_ili_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
-          if(!err) {
-            if(socket) {
-              socket.emit("status_ili_source", {live: mainframeStatus.sourcing.ili.live, lastUpdated: mainframeStatus.sourcing.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
-            } else {
-              io.sockets.emit("status_ili_source", {live: mainframeStatus.sourcing.ili.live, lastUpdated: mainframeStatus.sourcing.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
-            }
-          }
-        })
-      }
-    });
-  }
-
-  function sendILICleanStatus(socket=null) {
-    var tsToday = getTimestampAtHour(4);
-    mongoFindCount("logs_ili_clean", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-      if(!err) {
-        mongoFindCount("logs_ili_clean", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
-          if(!err) {
-            if(socket) {
-              socket.emit("status_ili_clean", {live: mainframeStatus.cleaning.ili.live, lastUpdated: mainframeStatus.cleaning.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
-            } else {
-              io.sockets.emit("status_ili_clean", {live: mainframeStatus.cleaning.ili.live, lastUpdated: mainframeStatus.cleaning.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
-            }
-
-          }
-        })
-      }
-    });
-  }
-
-  function sendILIUpdateStatus(socket=null) {
-    var tsToday = getTimestampAtHour(4);
-    mongoFindCount("logs_ili_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-      if(!err) {
-        mongoFindCount("logs_ili_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
-          if(!err) {
-            if(socket) {
-              socket.emit("status_ili_update", {live: mainframeStatus.updates.ili.live, lastUpdated: mainframeStatus.updates.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
-            } else {
-              io.sockets.emit("status_ili_update", {live: mainframeStatus.updates.ili.live, lastUpdated: mainframeStatus.updates.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
-            }
-          }
-        })
-      }
-    });
-  }
-
-  function sendSensorsSourceStatus(socket=null) {
-    var tsToday = getTimestampAtHour(4);
-    mongoFindCount("logs_sensors_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-      if(!err) {
-        mongoFindCount("logs_sensors_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
-          if(!err) {
-            if(socket) {
-              socket.emit("status_sensors_source", {live: mainframeStatus.sourcing.sensors.live, lastUpdated: mainframeStatus.sourcing.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
-            } else {
-              io.sockets.emit("status_sensors_source", {live: mainframeStatus.sourcing.sensors.live, lastUpdated: mainframeStatus.sourcing.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
-            }
-          }
-        })
-      }
-    });
-  }
-
-  function sendSensorsUpdateStatus(socket=null) {
-    var tsToday = getTimestampAtHour(4);
-    mongoFindCount("logs_sensors_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
-      if(!err) {
-        mongoFindCount("logs_sensors_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
-          if(!err) {
-            if(socket) {
-              socket.emit("status_sensors_update", {live: mainframeStatus.updates.sensors.live, lastUpdated: mainframeStatus.updates.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
-            } else {
-              io.sockets.emit("status_sensors_update", {live: mainframeStatus.updates.sensors.live, lastUpdated: mainframeStatus.updates.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
-            }
-          }
-        })
-      }
-    });
-  }
-
-  function sendTotemStatus(k, socket=null) {
-
-    var tsToday = getTimestampAtHour(4);
-
-    // TODO move totem status to another data object?
-    var stat = Object.assign({}, totems[k].status)
-    stat.totemKey = k;
-    stat.dropouts = 0;
-    stat.interactions = 0;
-
-    mongoFindCount("logs_status_"+k, {status:false, timestamp: {$gt: tsToday}}, function(err, numDrops) {
-      if(!err) {
-        stat.dropouts = numDrops;
-        var interactions = 0;
-        mongoFindCount("logs_navigation_"+k, {trigger:{$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, navs) {
-          if(!err) {
-            stat.interactions += navs;
-            mongoFindCount("logs_interaction_"+k, {trigger:{$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, ints) {
-              if(!err) {
-                stat.interactions += ints;
-                if(socket) {
-                  // Return a pull
-                  socket.emit("status_totem", stat)
-                } else {
-                  // Push update
-                  io.sockets.emit("status_totem", stat);
-                }
-              }
-            });
-          }
-        });
-      }
-    });
-  }
-
   // socket.on("call_name", function(params) {
   //
   // });
 
 });
+
+function sendILISourceStatus(socket=null) {
+  // Get current ILI status
+  // TODO choose a better way of doing this? And handle errors
+  var tsToday = getTimestampAtHour(4);
+  mongoFindCount("logs_ili_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+    if(!err) {
+      mongoFindCount("logs_ili_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+        if(!err) {
+          if(socket) {
+            socket.emit("status_ili_source", {live: mainframeStatus.sourcing.ili.live, lastUpdated: mainframeStatus.sourcing.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+          } else {
+            io.sockets.emit("status_ili_source", {live: mainframeStatus.sourcing.ili.live, lastUpdated: mainframeStatus.sourcing.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+          }
+        }
+      })
+    }
+  });
+}
+
+function sendILICleanStatus(socket=null) {
+  var tsToday = getTimestampAtHour(4);
+  mongoFindCount("logs_ili_clean", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+    if(!err) {
+      mongoFindCount("logs_ili_clean", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+        if(!err) {
+          if(socket) {
+            socket.emit("status_ili_clean", {live: mainframeStatus.cleaning.ili.live, lastUpdated: mainframeStatus.cleaning.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+          } else {
+            io.sockets.emit("status_ili_clean", {live: mainframeStatus.cleaning.ili.live, lastUpdated: mainframeStatus.cleaning.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+          }
+
+        }
+      })
+    }
+  });
+}
+
+function sendILIUpdateStatus(socket=null) {
+  var tsToday = getTimestampAtHour(4);
+  mongoFindCount("logs_ili_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+    if(!err) {
+      mongoFindCount("logs_ili_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+        if(!err) {
+          if(socket) {
+            socket.emit("status_ili_update", {live: mainframeStatus.updates.ili.live, lastUpdated: mainframeStatus.updates.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+          } else {
+            io.sockets.emit("status_ili_update", {live: mainframeStatus.updates.ili.live, lastUpdated: mainframeStatus.updates.ili.lastUpdated, warnings: numWarnings, errors: numErrors});
+          }
+        }
+      })
+    }
+  });
+}
+
+function sendSensorsSourceStatus(socket=null) {
+  var tsToday = getTimestampAtHour(4);
+  mongoFindCount("logs_sensors_source", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+    if(!err) {
+      mongoFindCount("logs_sensors_source", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+        if(!err) {
+          if(socket) {
+            socket.emit("status_sensors_source", {live: mainframeStatus.sourcing.sensors.live, lastUpdated: mainframeStatus.sourcing.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+          } else {
+            io.sockets.emit("status_sensors_source", {live: mainframeStatus.sourcing.sensors.live, lastUpdated: mainframeStatus.sourcing.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+          }
+        }
+      })
+    }
+  });
+}
+
+function sendSensorsUpdateStatus(socket=null) {
+  var tsToday = getTimestampAtHour(4);
+  mongoFindCount("logs_sensors_update", {warnings:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numWarnings) {
+    if(!err) {
+      mongoFindCount("logs_sensors_update", {errors:{$exists:true}, timestamp: {$gt: tsToday}}, function(err, numErrors) {
+        if(!err) {
+          if(socket) {
+            socket.emit("status_sensors_update", {live: mainframeStatus.updates.sensors.live, lastUpdated: mainframeStatus.updates.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+          } else {
+            io.sockets.emit("status_sensors_update", {live: mainframeStatus.updates.sensors.live, lastUpdated: mainframeStatus.updates.sensors.lastUpdated, warnings: numWarnings, errors: numErrors});
+          }
+        }
+      })
+    }
+  });
+}
+
+function sendTotemStatus(k, socket=null) {
+
+  var tsToday = getTimestampAtHour(4);
+
+  // TODO move totem status to another data object?
+  var stat = Object.assign({}, totems[k].status)
+  stat.totemKey = k;
+  stat.dropouts = 0;
+  stat.interactions = 0;
+
+  mongoFindCount("logs_status_"+k, {status:false, timestamp: {$gt: tsToday}}, function(err, numDrops) {
+    if(!err) {
+      stat.dropouts = numDrops;
+      var interactions = 0;
+      mongoFindCount("logs_navigation_"+k, {trigger:{$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, navs) {
+        if(!err) {
+          stat.interactions += navs;
+          mongoFindCount("logs_interaction_"+k, {trigger:{$ne: "auto"}, timestamp: {$gt: tsToday}}, function(err, ints) {
+            if(!err) {
+              stat.interactions += ints;
+              if(socket) {
+                // Return a pull
+                socket.emit("status_totem", stat)
+              } else {
+                // Push update
+                io.sockets.emit("status_totem", stat);
+              }
+            }
+          });
+        }
+      });
+    }
+  });
+}
 
 
 function getAccessToken(length) {
