@@ -348,8 +348,9 @@ function openOverlay() {
   document.getElementById("overlay").style.display = "block";
 }
 
-function openLogOverlay() {
+function openLogOverlay(title) {
   document.getElementById("overlay-log-container").style.display = "block";
+  document.getElementById("overlay-title-logs").innerHTML = title;
   overlayLogTable.innerHTML = "<h3 class='overlay'>Loading...</h3>"
   openOverlay();
 }

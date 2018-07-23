@@ -1278,6 +1278,9 @@ app.post('/analytics', function(req, res) {
     }
 
     res.send(resObj);
+
+    // Update any clients
+    sendTotemStatus(req.body.totemKey)
   }
 });
 
