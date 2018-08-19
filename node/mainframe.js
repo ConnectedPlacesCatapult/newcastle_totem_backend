@@ -654,25 +654,6 @@ function makeLogEntry(logText, pre="-") {
 const mongoURL = 'mongodb://localhost:27017';
 const mongoName = 'totem_backend';
 
-function mongoExec(method, collection, data) {
-  MongoClient.connect(mongoURL, function(err, client) {
-
-    if(err) {
-      makeLogEntry("MONGO CONNECTION FAILED", "F")
-      makeLogEntry(JSON.stringify(err), "F");
-      // TODO LOG ERROR FOR MAINFRAME
-      return;
-    }
-
-    const db = client.db(mongoName)
-
-    method(db, collection, data, function() {
-      client.close()
-    });
-
-  });
-}
-
 function mongoInsertOne(collection, dataObj, callback=null) {
   const col = mdb.collection(collection);
   col.insert(dataObj, function(err, res) {
@@ -1371,7 +1352,7 @@ function addTotemCommand(data) {
 
 //// SERVER INITIALISATION /////////////////////////////////////////////////////
 
-MongoClient.connect(mongoURL, function(err, client) {
+MongoClient.connect(mongoURL, { useNewUrlParser: true}, function(err, client) {
   if(err) {
     makeLogEntry("MONGO CONNECTION FAILED", "F")
     makeLogEntry(JSON.stringify(err), "F");
