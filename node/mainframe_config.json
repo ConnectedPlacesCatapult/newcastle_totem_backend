@@ -8,10 +8,18 @@
   "updateILIMinuteInterval":15,
 
   "minHeartbeatSilence":15,
+
   "notifications": {
     "server": [],
     "content": [],
     "totems":[],
     "daily": []
-  }
+  },
+
+  "totemHeartbeatInterval":300000,
+  "totemHeartbeatAlertPeriod":20000,
+  "analyticsEndpoint":"http://52.56.231.86:3000/analytics",
+  "statusEndpoint":"http://52.56.231.86:3000/status",
+  "confirmCommandsEndpoint":"http://52.56.231.86:3000/confirm-commands"
+
 }

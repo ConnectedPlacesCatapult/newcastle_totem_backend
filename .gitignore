@@ -1,2 +1,4 @@
 keys.json
 client_secret.json
+totem/controller/knocking/*
+node/node_modules/*

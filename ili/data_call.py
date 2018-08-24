@@ -25,6 +25,10 @@ totem_location_1_lon = totem_lon
 totem_location_2_lat = 54.979988
 totem_location_2_lon = -1.611195
 
+## Load totem details from config
+with open('../totem_details.json') as totem_details:
+    totems = json.load(totem_details)
+
 ## Load keys from shared location
 with open('../keys.json') as keys:
     keys = json.load(keys)
@@ -151,10 +155,6 @@ def dark_sky_call(totem_lat, totem_lon):
     two_hours_from_now_clear = data["hourly"]['data'][4]["icon"]
 
     return precipProbability, temperature, clear,two_hours_from_now_precipProbability, two_hours_from_now_temperature,two_hours_from_now_clear
-
-
-## Getting weather data
-weather_data = dark_sky_call(totem_location_1_lat,totem_location_1_lon)
 
 ##### Flipping a biased coin as to weather to generate a recommendation or not
 def flip(p):
@@ -406,6 +406,9 @@ def adding_stopovers(minutes ,totem_lat, totem_lon, recommendation):
         pass
     return recommendation
 
+################################################################################
+
+#### MAIN
 
 
 # filtering the previous day recommendation
@@ -418,282 +421,291 @@ try:
 except Exception, e:
     pass
 
-recommendation = recommendation_poi(15, totem_location_1_lat, totem_location_1_lon, places_all)
+for t_key in totems:
 
-adding_stopovers(15, totem_location_1_lat, totem_location_1_lon, recommendation)
-adding_stopovers(30, totem_location_1_lat, totem_location_1_lon, recommendation)
+    totem = totems[t_key]
 
-places_temp = []
-places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_leisure']])
-places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_curious']])
+    ## Getting weather data
+    weather_data = dark_sky_call(totem["lat"], totem["lon"])
 
+    recommendation = recommendation_poi(15, totem["lat"], totem["lon"], places_all)
 
-###### Choosing and adding the rest of map POIS
-def flatten(lst):
-    "Flatten one level of nesting"
-    return chain.from_iterable(lst)
+    adding_stopovers(15, totem["lat"], totem["lon"], recommendation)
+    adding_stopovers(30, totem["lat"], totem["lon"], recommendation)
 
-
-places_temp = list(flatten(places_temp))
+    places_temp = []
+    places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_leisure']])
+    places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_curious']])
 
 
-tranquility  = random.sample(filter(lambda d: d['properties'][0]['subcategory'] in ['park', 'gardens'],
-                     get_closest('tranquility', places_all, 1.4 * 60 * 30)),
-                             3-len(filter(lambda c: c['category'] == 'tranquility', places_temp)))
+    ###### Choosing and adding the rest of map POIS
+    def flatten(lst):
+        "Flatten one level of nesting"
+        return chain.from_iterable(lst)
 
-tranquility.append(filter(lambda c: c['category'] == 'tranquility', places_temp))
+
+    places_temp = list(flatten(places_temp))
 
 
-places_rest = []
+    tranquility  = random.sample(filter(lambda d: d['properties'][0]['subcategory'] in ['park', 'gardens'],
+                         get_closest('tranquility', places_all, 1.4 * 60 * 30)),
+                                 3-len(filter(lambda c: c['category'] == 'tranquility', places_temp)))
 
-for i in tranquility:
-    if isinstance(i, list):
-        for j in i:
-            places_rest.append(j)
+    tranquility.append(filter(lambda c: c['category'] == 'tranquility', places_temp))
+
+
+    places_rest = []
+
+    for i in tranquility:
+        if isinstance(i, list):
+            for j in i:
+                places_rest.append(j)
+        else:
+            places_rest.append(i)
+
+    places_temp = []
+    places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_leisure']])
+    places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_curious']])
+
+    places_temp = list(flatten(places_temp))
+
+    attractions  = random.sample(filter(lambda d: d['category'] ==  'attractions',
+                         get_closest('attractions', places_all, 1.4 * 60 * 30)),
+                                 3-len(filter(lambda c: c['category'] == 'attractions', places_temp)))
+
+    attractions.append(filter(lambda c: c['category'] == 'attractions', places_temp))
+
+    for i in attractions:
+        if isinstance(i, list):
+            for j in i:
+                places_rest.append(j)
+        else:
+            places_rest.append(i)
+
+
+    places_temp = []
+    places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_leisure']])
+    places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_curious']])
+
+    places_temp = list(flatten(places_temp))
+
+    culture  = random.sample(filter(lambda d: d['category'] ==  'culture',
+                         get_closest('culture', places_all, 1.4 * 60 * 30)),
+                                 3-len(filter(lambda c: c['category'] == 'culture', places_temp)))
+
+    culture.append(filter(lambda c: c['category'] == 'culture', places_temp))
+
+    for i in culture:
+        if isinstance(i, list):
+            for j in i:
+                places_rest.append(j)
+        else:
+            places_rest.append(i)
+
+    places_temp = []
+    places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_leisure']])
+    places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_curious']])
+
+    places_temp = list(flatten(places_temp))
+
+    food_drinks  = random.sample(filter(lambda d: d['category'] ==  'food_drinks',
+                         get_closest('food_drinks', places_all, 1.4 * 60 * 30)),
+                                 3-len(filter(lambda c: c['category'] == 'food_drinks', places_temp)))
+
+    food_drinks.append(filter(lambda c: c['category'] == 'food_drinks', places_temp))
+
+    for i in food_drinks:
+        if isinstance(i, list):
+            for j in i:
+                places_rest.append(j)
+        else:
+            places_rest.append(i)
+
+
+    recommendation[0]['properties'][0]['amenities'] = places_rest
+    recommendation[0]['properties'][0]['two_hour_rain_forecast'] = weather_data[3]
+    recommendation[0]['properties'][0]['two_hour_temperature_forecast'] = weather_data[4]
+    recommendation[0]['properties'][0]['two_hour_weather_forecast'] = weather_data[5]
+
+
+    ##### Adding counter numbers and ensuring that the recomendation appears in the amenities list
+
+    rest_events  = random.sample(filter(lambda d: d['category'] in 'event',
+                                        get_closest('event', places_all, 1.4 * 60 * 30)), 3)
+
+
+    for i in rest_events:
+        if isinstance(i, list):
+            for j in i:
+                places_rest.append(j)
+        else:
+            places_rest.append(i)
+
+
+    amenities_matching_rec = filter(lambda d: d['category'] in recommendation[0]['category'], recommendation[0]['properties'][0]['amenities'])
+
+    ## the below will be empty if the recommendation is not in the list
+    matching_flag = filter(lambda d: d['name'] in recommendation[0]['category'], amenities_matching_rec)
+    if not matching_flag:
+        temp = {}
+        temp['category'] = recommendation[0]['category']
+        temp['coordinates'] = recommendation[0]['coordinates']
+        temp['name'] = recommendation[0]['name']
+        temp['subcategory'] = recommendation[0]['properties'][0]['subcategory']
+        ## Adding the remaining attributes if the recommendation is an event
+        if temp['category'] == 'event':
+            temp['address'] = recommendation[0]['address']
+            temp['properties'] = [{'start': recommendation[0]['properties'][0]['start'],
+                                    'free': recommendation[0]['properties'][0]['free'],
+                                    'description': recommendation[0]['properties'][0]['description']}]
+
+        ## replace the first amenities entry with the recommendation
+        recommendation[0]['properties'][0]['amenities'][0] = temp
+
+
+
+    ## Adding the counter
+    counter = 1
+    for i in range(0, len(recommendation[0]['properties'][0]['amenities'])):
+        recommendation[0]['properties'][0]['amenities'][i]['counter'] = counter
+        counter = counter+1
+
+    ###### Add permanent pois
+    ## toilets
+    recommendation[0]['properties'][0]['amenities'].extend(filter(lambda d: d['category'] == 'toilet', places_all))
+    ## water
+    recommendation[0]['properties'][0]['amenities'].extend(filter(lambda d: d['category'] == 'water', places_all))
+
+    ###### Add semantics
+    # Connect to google sheet
+    scope = ['https://spreadsheets.google.com/feeds',
+            'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_name('../client_secret.json', scope)
+    client = gspread.authorize(creds)
+
+    # Find a workbook by name and open the first sheet
+    # Make sure you use the right name here.
+    sheet = client.open("totem_messages").sheet1
+
+    # Extract all of the values
+    list_of_hashes = sheet.get_all_records()
+    df = pd.DataFrame(list_of_hashes)
+    df = df.loc[0:10]
+
+    now = datetime.now().hour
+    day_number = datetime.now().weekday()
+    rain_probability = weather_data[0]
+    temperature = logistic.cdf(weather_data[1],loc=12, scale=5)
+    clear = weather_data[2]
+
+
+    anytime = ["Aareet!", "Hey there!", "You look nice!", "Alreet Hen!"]
+
+    weekday_morning =  filter(None,list(df['Weekday Morning (6am-11am)'].values))
+    weekday_lunch = filter(None,list(df['Weekday Lunch (11am-3pm)'].values))
+    weekday_afternoon = filter(None,list(df['Weekday Afternoon (3-6pm)'].values))
+    weekday_evening = filter(None,list(df['Weekday Evening (6-8pm)'].values))
+    weekday_late_evening = filter(None,list(df['Weekday Late Evening (8pm-1am)'].values))
+    weekday_night = filter(None,list(df['Weekday Nighttime (1-6am)'].values))
+    weekend = filter(None,list(df['Weekend'].values))
+
+    sun_cold = filter(None,list(df['Sun cold'].values))
+    sun_warm = filter(None,list(df['Sun warm'].values))
+    cloudy_cold = filter(None,list(df['Cloudy cold'].values))
+    cloudy_warm = filter(None,list(df['Cloudy warm'].values))
+
+    rainy = filter(None,list(df['Rainy'].values))
+    hot = filter(None,list(df['Hot'].values))
+    food = filter(None,list(df['Food'].values))
+    drinks = filter(None,list(df['Drink'].values))
+    attractions = filter(None,list(df['Attractions'].values))
+    culture = filter(None,list(df['Culture'].values))
+    tranquility = filter(None,list(df['Tranquility'].values))
+    event = filter(None,list(df['Events'].values))
+
+    action_msg = ''
+
+    if day_number == 5 or day_number == 6:
+        action_msg = weekend[random.sample(xrange(len(weekend)), 1)[0]]
     else:
-        places_rest.append(i)
+    #     action_msg = anytime[random.sample(xrange(len(anytime)), 1)[0]]
+        if now >=6 and now <=11:
+            action_msg =  weekday_morning[random.sample(xrange(len(weekday_morning)), 1)[0]]
+        elif now >11 and now <=15:
+            action_msg =  weekday_lunch[random.sample(xrange(len(weekday_lunch)), 1)[0]]
+        elif now >15 and now <=18:
+            action_msg =  weekday_afternoon[random.sample(xrange(len(weekday_afternoon)), 1)[0]]
+        elif now >18 and now <=20:
+            action_msg =  weekday_evening[random.sample(xrange(len(weekday_evening)), 1)[0]]
+        elif now >20 and now <=1:
+            action_msg = weekday_late_evening[random.sample(xrange(len(weekday_late_evening)), 1)[0]]
+        else:
+            action_msg =  weekday_night[random.sample(xrange(len(weekday_night)), 1)[0]]
 
-places_temp = []
-places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_leisure']])
-places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_curious']])
-
-places_temp = list(flatten(places_temp))
-
-attractions  = random.sample(filter(lambda d: d['category'] ==  'attractions',
-                     get_closest('attractions', places_all, 1.4 * 60 * 30)),
-                             3-len(filter(lambda c: c['category'] == 'attractions', places_temp)))
-
-attractions.append(filter(lambda c: c['category'] == 'attractions', places_temp))
-
-for i in attractions:
-    if isinstance(i, list):
-        for j in i:
-            places_rest.append(j)
-    else:
-        places_rest.append(i)
-
-
-places_temp = []
-places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_leisure']])
-places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_curious']])
-
-places_temp = list(flatten(places_temp))
-
-culture  = random.sample(filter(lambda d: d['category'] ==  'culture',
-                     get_closest('culture', places_all, 1.4 * 60 * 30)),
-                             3-len(filter(lambda c: c['category'] == 'culture', places_temp)))
-
-culture.append(filter(lambda c: c['category'] == 'culture', places_temp))
-
-for i in culture:
-    if isinstance(i, list):
-        for j in i:
-            places_rest.append(j)
-    else:
-        places_rest.append(i)
-
-places_temp = []
-places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_leisure']])
-places_temp.append([i for i in recommendation[0]['properties'][0]['stopovers_curious']])
-
-places_temp = list(flatten(places_temp))
-
-food_drinks  = random.sample(filter(lambda d: d['category'] ==  'food_drinks',
-                     get_closest('food_drinks', places_all, 1.4 * 60 * 30)),
-                             3-len(filter(lambda c: c['category'] == 'food_drinks', places_temp)))
-
-food_drinks.append(filter(lambda c: c['category'] == 'food_drinks', places_temp))
-
-for i in food_drinks:
-    if isinstance(i, list):
-        for j in i:
-            places_rest.append(j)
-    else:
-        places_rest.append(i)
-
-
-recommendation[0]['properties'][0]['amenities'] = places_rest
-recommendation[0]['properties'][0]['two_hour_rain_forecast'] = weather_data[3]
-recommendation[0]['properties'][0]['two_hour_temperature_forecast'] = weather_data[4]
-recommendation[0]['properties'][0]['two_hour_weather_forecast'] = weather_data[5]
-
-
-##### Adding counter numbers and ensuring that the recomendation appears in the amenities list
-
-rest_events  = random.sample(filter(lambda d: d['category'] in 'event',
-                                    get_closest('event', places_all, 1.4 * 60 * 30)), 3)
-
-
-for i in rest_events:
-    if isinstance(i, list):
-        for j in i:
-            places_rest.append(j)
-    else:
-        places_rest.append(i)
-
-
-amenities_matching_rec = filter(lambda d: d['category'] in recommendation[0]['category'], recommendation[0]['properties'][0]['amenities'])
-
-## the below will be empty if the recommendation is not in the list
-matching_flag = filter(lambda d: d['name'] in recommendation[0]['category'], amenities_matching_rec)
-if not matching_flag:
-    temp = {}
-    temp['category'] = recommendation[0]['category']
-    temp['coordinates'] = recommendation[0]['coordinates']
-    temp['name'] = recommendation[0]['name']
-    temp['subcategory'] = recommendation[0]['properties'][0]['subcategory']
-    ## Adding the remaining attributes if the recommendation is an event
-    if temp['category'] == 'event':
-        temp['address'] = recommendation[0]['address']
-        temp['properties'] = [{'start': recommendation[0]['properties'][0]['start'],
-                                'free': recommendation[0]['properties'][0]['free'],
-                                'description': recommendation[0]['properties'][0]['description']}]
-
-    ## replace the first amenities entry with the recommendation
-    recommendation[0]['properties'][0]['amenities'][0] = temp
-
-
-
-## Adding the counter
-counter = 1
-for i in range(0, len(recommendation[0]['properties'][0]['amenities'])):
-    recommendation[0]['properties'][0]['amenities'][i]['counter'] = counter
-    counter = counter+1
-
-###### Add permanent pois
-## toilets
-recommendation[0]['properties'][0]['amenities'].extend(filter(lambda d: d['category'] == 'toilet', places_all))
-## water
-recommendation[0]['properties'][0]['amenities'].extend(filter(lambda d: d['category'] == 'water', places_all))
-
-###### Add semantics
-# Connect to google sheet
-scope = ['https://spreadsheets.google.com/feeds',
-        'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name('../client_secret.json', scope)
-client = gspread.authorize(creds)
-
-# Find a workbook by name and open the first sheet
-# Make sure you use the right name here.
-sheet = client.open("totem_messages").sheet1
-
-# Extract all of the values
-list_of_hashes = sheet.get_all_records()
-df = pd.DataFrame(list_of_hashes)
-df = df.loc[0:10]
-
-now = datetime.now().hour
-day_number = datetime.now().weekday()
-rain_probability = weather_data[0]
-temperature = logistic.cdf(weather_data[1],loc=12, scale=5)
-clear = weather_data[2]
-
-
-anytime = ["Aareet!", "Hey there!", "You look nice!", "Alreet Hen!"]
-
-weekday_morning =  filter(None,list(df['Weekday Morning (6am-11am)'].values))
-weekday_lunch = filter(None,list(df['Weekday Lunch (11am-3pm)'].values))
-weekday_afternoon = filter(None,list(df['Weekday Afternoon (3-6pm)'].values))
-weekday_evening = filter(None,list(df['Weekday Evening (6-8pm)'].values))
-weekday_late_evening = filter(None,list(df['Weekday Late Evening (8pm-1am)'].values))
-weekday_night = filter(None,list(df['Weekday Nighttime (1-6am)'].values))
-weekend = filter(None,list(df['Weekend'].values))
-
-sun_cold = filter(None,list(df['Sun cold'].values))
-sun_warm = filter(None,list(df['Sun warm'].values))
-cloudy_cold = filter(None,list(df['Cloudy cold'].values))
-cloudy_warm = filter(None,list(df['Cloudy warm'].values))
-
-rainy = filter(None,list(df['Rainy'].values))
-hot = filter(None,list(df['Hot'].values))
-food = filter(None,list(df['Food'].values))
-drinks = filter(None,list(df['Drink'].values))
-attractions = filter(None,list(df['Attractions'].values))
-culture = filter(None,list(df['Culture'].values))
-tranquility = filter(None,list(df['Tranquility'].values))
-event = filter(None,list(df['Events'].values))
-
-action_msg = ''
-
-if day_number == 5 or day_number == 6:
-    action_msg = weekend[random.sample(xrange(len(weekend)), 1)[0]]
-else:
-#     action_msg = anytime[random.sample(xrange(len(anytime)), 1)[0]]
-    if now >=6 and now <=11:
-        action_msg =  weekday_morning[random.sample(xrange(len(weekday_morning)), 1)[0]]
-    elif now >11 and now <=15:
-        action_msg =  weekday_lunch[random.sample(xrange(len(weekday_lunch)), 1)[0]]
-    elif now >15 and now <=18:
-        action_msg =  weekday_afternoon[random.sample(xrange(len(weekday_afternoon)), 1)[0]]
-    elif now >18 and now <=20:
-        action_msg =  weekday_evening[random.sample(xrange(len(weekday_evening)), 1)[0]]
-    elif now >20 and now <=1:
-        action_msg = weekday_late_evening[random.sample(xrange(len(weekday_late_evening)), 1)[0]]
-    else:
-        action_msg =  weekday_night[random.sample(xrange(len(weekday_night)), 1)[0]]
-
-if "rain" in recommendation[0]['properties'][0]['two_hour_weather_forecast']:
-    action_msg = action_msg + "_" + rainy_prob[random.sample(xrange(len(rainy_prob)), 1)[0]]
-else:
-    if "clear" in clear and temperature <= 0.2:
-        action_msg = action_msg + "_" + sun_cold[random.sample(xrange(len(sun_cold)), 1)[0]]
-    elif "clear" in clear and temperature > 0.2 and temperature < 0.8:
-        action_msg = action_msg + "_" + sun_warm[random.sample(xrange(len(sun_warm)), 1)[0]]
-    elif "clear" in clear and temperature >= 0.8:
-        action_msg = action_msg + "_" + hot[random.sample(xrange(len(hot)), 1)[0]]
-    elif "cloudy" in clear and temperature <= 0.2:
-        action_msg = action_msg + "_" + cloudy_cold[random.sample(xrange(len(cloudy_cold)), 1)[0]]
-    elif "cloudy" in clear and temperature > 0.2:
-        action_msg = action_msg + "_" + cloudy_warm[random.sample(xrange(len(cloudy_warm)), 1)[0]]
-    elif "rain" in clear:
+    if "rain" in recommendation[0]['properties'][0]['two_hour_weather_forecast']:
         action_msg = action_msg + "_" + rainy[random.sample(xrange(len(rainy)), 1)[0]]
     else:
-        pass
+        if "clear" in clear and temperature <= 0.2:
+            action_msg = action_msg + "_" + sun_cold[random.sample(xrange(len(sun_cold)), 1)[0]]
+        elif "clear" in clear and temperature > 0.2 and temperature < 0.8:
+            action_msg = action_msg + "_" + sun_warm[random.sample(xrange(len(sun_warm)), 1)[0]]
+        elif "clear" in clear and temperature >= 0.8:
+            action_msg = action_msg + "_" + hot[random.sample(xrange(len(hot)), 1)[0]]
+        elif "cloudy" in clear and temperature <= 0.2:
+            action_msg = action_msg + "_" + cloudy_cold[random.sample(xrange(len(cloudy_cold)), 1)[0]]
+        elif "cloudy" in clear and temperature > 0.2:
+            action_msg = action_msg + "_" + cloudy_warm[random.sample(xrange(len(cloudy_warm)), 1)[0]]
+        elif "rain" in clear:
+            action_msg = action_msg + "_" + rainy[random.sample(xrange(len(rainy)), 1)[0]]
+        else:
+            pass
 
-if recommendation[0]['category'] == 'event':
-    action_msg = action_msg + "_" + event[random.sample(xrange(len(event)), 1)[0]] + ":_" + recommendation[0]['name']
-elif recommendation[0]['category'] == 'tranquility':
-    action_msg = action_msg + "_" + tranquility[random.sample(xrange(len(tranquility)), 1)[0]] + ":_" + recommendation[0]['name']
-elif recommendation[0]['category'] == 'culture':
-    action_msg = action_msg + "_" + culture[random.sample(xrange(len(culture)), 1)[0]] + ":_" + recommendation[0]['name']
-elif recommendation[0]['category'] == 'attractions':
-    action_msg = action_msg + "_" + attractions[random.sample(xrange(len(attractions)), 1)[0]] + ":_" + recommendation[0]['name']
-elif recommendation[0]['category'] == 'food_drinks':
-    if  now >11 and now <=15:
-        action_msg = action_msg + "_" + food[random.sample(xrange(len(food)), 1)[0]] + ":_" + recommendation[0]['name']
-    elif now >15 and now <=2:
-        action_msg = action_msg + "_" + drinks[random.sample(xrange(len(drinks)), 1)[0]] + ":_" + recommendation[0]['name']
-    else:
-        action_msg = action_msg + "_" + food[random.sample(xrange(len(food)), 1)[0]] + ":_" + recommendation[0]['name']
+    if recommendation[0]['category'] == 'event':
+        action_msg = action_msg + "_" + event[random.sample(xrange(len(event)), 1)[0]] + ":_" + recommendation[0]['name']
+    elif recommendation[0]['category'] == 'tranquility':
+        action_msg = action_msg + "_" + tranquility[random.sample(xrange(len(tranquility)), 1)[0]] + ":_" + recommendation[0]['name']
+    elif recommendation[0]['category'] == 'culture':
+        action_msg = action_msg + "_" + culture[random.sample(xrange(len(culture)), 1)[0]] + ":_" + recommendation[0]['name']
+    elif recommendation[0]['category'] == 'attractions':
+        action_msg = action_msg + "_" + attractions[random.sample(xrange(len(attractions)), 1)[0]] + ":_" + recommendation[0]['name']
+    elif recommendation[0]['category'] == 'food_drinks':
+        if  now >11 and now <=15:
+            action_msg = action_msg + "_" + food[random.sample(xrange(len(food)), 1)[0]] + ":_" + recommendation[0]['name']
+        elif now >15 and now <=2:
+            action_msg = action_msg + "_" + drinks[random.sample(xrange(len(drinks)), 1)[0]] + ":_" + recommendation[0]['name']
+        else:
+            action_msg = action_msg + "_" + food[random.sample(xrange(len(food)), 1)[0]] + ":_" + recommendation[0]['name']
 
 
-## Cropping the action msg
-#action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
-action_msg = random.choice(action_msg.split('_')[0:3]) + '_' + action_msg.split('_')[3]
-#print action_msg
+    ## Cropping the action msg
+    #action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
+    action_msg = random.choice(action_msg.split('_')[0:3]) + '_' + action_msg.split('_')[3]
+    #print action_msg
 
-recommendation[0]['action_msg'] = action_msg
-recommendation[0]['totem_coords'] = [totem_location_1_lon,totem_location_1_lat]
+    recommendation[0]['action_msg'] = action_msg
+    recommendation[0]['totem_coords'] = [totem["lon"], totem["lat"]]
 
-## Saving recommendation for further checking and uploading to s3
-uploading_date = datetime.today()
-#print datetime.today()
-with open('recommendation-totem-1.json', 'w') as outfile:
-    json.dump(recommendation, outfile)
+    ## Saving recommendation for further checking and uploading to s3
+    uploading_date = datetime.today()
+    #print datetime.today()
+    filename = 'recommendation-totem-'+str(totem['id'])+'.json'
 
-with open('recommendation_'+datetime.strftime( uploading_date, "%Y-%m-%d_%H")+'.json', 'w') as outfile:
-    json.dump(recommendation, outfile)
+    with open(filename, 'w') as outfile:
+        json.dump(recommendation, outfile)
 
-ACCESS_KEY_ID = keys["boto3_access_key"]
-ACCESS_SECRET_KEY = keys["boto3_secret_access_key"]
-BUCKET_NAME = keys["bucket_name"]
-s3 = boto3.resource(
-    's3',
-     aws_access_key_id=ACCESS_KEY_ID,
-     aws_secret_access_key=ACCESS_SECRET_KEY,
-     config=Config(signature_version='s3v4')
-)
+    #with open('recommendation_'+datetime.strftime( uploading_date, "%Y-%m-%d_%H")+'.json', 'w') as outfile:
+    #    json.dump(recommendation, outfile)
 
-s3.Bucket(BUCKET_NAME).upload_file('recommendation-totem-1.json',
-                                   'recommendation-totem-1.json', ExtraArgs={'ContentType': "application/json",
-                                                                                                'ACL':'public-read'})
+    ACCESS_KEY_ID = keys["boto3_access_key"]
+    ACCESS_SECRET_KEY = keys["boto3_secret_access_key"]
+    BUCKET_NAME = keys["bucket_name"]
+    s3 = boto3.resource(
+        's3',
+         aws_access_key_id=ACCESS_KEY_ID,
+         aws_secret_access_key=ACCESS_SECRET_KEY,
+         config=Config(signature_version='s3v4')
+    )
+
+    s3.Bucket(BUCKET_NAME).upload_file(filename,
+                                       filename, ExtraArgs={'ContentType': "application/json",
+                                                                                                    'ACL':'public-read'})
