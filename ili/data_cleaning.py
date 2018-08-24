@@ -642,6 +642,10 @@ places_all = filter(lambda d: 'Starbucks' not in d['name'], places_all)
 places_all = filter(lambda d: 'Costa' not in d['name'], places_all)
 places_all = filter(lambda d: 'Pret' not in d['name'], places_all)
 places_all = filter(lambda d: 'Nero' not in d['name'], places_all)
+places_all = filter(lambda d: 'KFC' not in d['name'], places_all)
+places_all = filter(lambda d: 'Greggs' not in d['name'], places_all)
+places_all = filter(lambda d: 'McDonald' not in d['name'], places_all)
+places_all = filter(lambda d: 'Burger King' not in d['name'], places_all)
 
 ## Saving cleaned data to a file
 with open('places_all.json', 'w') as outfile:
