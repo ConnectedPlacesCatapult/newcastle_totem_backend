@@ -55,6 +55,7 @@ sendUpdate();
 
 function sendUpdate() {
 
+
   $.post( controllerEndpoint, log, function(res) {
       // Successfully pushed; clear the log
       if("success" in res) {

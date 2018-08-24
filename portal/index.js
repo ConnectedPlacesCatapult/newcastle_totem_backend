@@ -4,8 +4,10 @@ const addr = "http://52.56.231.86:3001"
 
 var totems = null;
 
-var overlayInput = document.getElementById("overlay-input-container");
-var overlayTable = document.getElementById("overlay-table-container");
+var timers = {}
+
+var overlayInputList = document.getElementById("overlay-input-rows");
+var overlayLogTable = document.getElementById("overlay-table-container");
 
 var loginToken = null;
 
@@ -30,7 +32,9 @@ function makeConnection() {
   socket.on('init_content', function(data) {
     // Set server status
     document.getElementById("server-status-dot").className = "status live";
-    document.getElementById("server-timestamp").innerHTML = "Last restarted " + getReadableTimeSince(data.liveSince);
+    document.getElementById("server-timestamp").innerHTML = getReadableTimeSince(data.liveSince);
+    // Add timer entry for live updates
+    timers["server-timestamp"] = data.liveSince;
 
     totems = data.totems;
     // Set up totems DOM
@@ -43,35 +47,40 @@ function makeConnection() {
   socket.on("status_ili_source", function(data) {
     document.getElementById("ili-source-status").innerHTML = getStatusString(data);
     if(data.lastUpdated) {
-      document.getElementById("ili-source-timestamp").innerHTML = "Last updated " + getReadableTimeSince(data.lastUpdated);
+      document.getElementById("ili-source-timestamp").innerHTML = getReadableTimeSince(data.lastUpdated);
+      timers["ili-source-timestamp"] = data.lastUpdated;
     }
   })
 
   socket.on("status_ili_clean", function(data) {
     document.getElementById("ili-clean-status").innerHTML = getStatusString(data);
     if(data.lastUpdated) {
-      document.getElementById("ili-clean-timestamp").innerHTML = "Last updated " + getReadableTimeSince(data.lastUpdated);
+      document.getElementById("ili-clean-timestamp").innerHTML = getReadableTimeSince(data.lastUpdated);
+      timers["ili-clean-timestamp"] = data.lastUpdated;
     }
   })
 
   socket.on("status_ili_update", function(data) {
     document.getElementById("ili-update-status").innerHTML = getStatusString(data);
     if(data.lastUpdated) {
-      document.getElementById("ili-update-timestamp").innerHTML = "Last updated " + getReadableTimeSince(data.lastUpdated);
+      document.getElementById("ili-update-timestamp").innerHTML = getReadableTimeSince(data.lastUpdated);
+      timers["ili-update-timestamp"] = data.lastUpdated;
     }
   })
 
   socket.on("status_sensors_source", function(data) {
     document.getElementById("sensors-source-status").innerHTML = getStatusString(data);
     if(data.lastUpdated) {
-      document.getElementById("sensors-source-timestamp").innerHTML = "Last updated " + getReadableTimeSince(data.lastUpdated);
+      document.getElementById("sensors-source-timestamp").innerHTML = getReadableTimeSince(data.lastUpdated);
+      timers["sensors-source-timestamp"] = data.lastUpdated;
     }
   })
 
   socket.on("status_sensors_update", function(data) {
     document.getElementById("sensors-update-status").innerHTML = getStatusString(data);
     if(data.lastUpdated) {
-      document.getElementById("sensors-update-timestamp").innerHTML = "Last updated " + getReadableTimeSince(data.lastUpdated);
+      document.getElementById("sensors-update-timestamp").innerHTML = getReadableTimeSince(data.lastUpdated);
+      timers["sensors-update-timestamp"] = data.lastUpdated;
     }
   })
 
@@ -83,7 +92,8 @@ function makeConnection() {
       document.getElementById("totem-status-dot-"+data.totemKey).className = "status down";
     }
 
-    document.getElementById("totem-timestamp-"+data.totemKey).innerHTML = "Last made contact " + getReadableTimeSince(data.lastContact);
+    document.getElementById("totem-timestamp-"+data.totemKey).innerHTML = getReadableTimeSince(data.lastContact);
+    timers["totem-timestamp-"+data.totemKey] = data.lastContact;
 
     if(data.live != true) {
       document.getElementById("totem-current-page-"+data.totemKey).innerHTML = "Unknown ("+data.curPage+")";
@@ -127,6 +137,15 @@ function makeConnection() {
   })
 }
 
+function maintainTimers() {
+  for(domElement in timers) {
+    document.getElementById(domElement).innerHTML = getReadableTimeSince(timers[domElement]);
+  }
+}
+
+// Update timers every minute
+setInterval(function() { maintainTimers() }, 60000);
+
 function logout(msg=null) {
   loginToken = null;
   localStorage.removeItem("login-token");
@@ -152,8 +171,8 @@ function createTotemTile(key, totem) {
 
   var headerTimestamp = document.createElement("p");
   headerTimestamp.className = "header_timestamp";
-  headerTimestamp.innerHTML = "Connecting..."
-  headerTimestamp.id = "totem-timestamp-"+key;
+  headerTimestamp.innerHTML = "Last made contact <span id='totem-timestamp-"+key+"'>-</span>";
+  //headerTimestamp.id = "totem-timestamp-"+key;
 
   headerContainer.appendChild(headerTitle);
   headerContainer.appendChild(headerTimestamp);
@@ -309,32 +328,36 @@ function sendCommand(key, command) {
 function resetOverlay() {
 
   // Clear input
-  //while(overlayInput.firstChild) {
-    //overlayInput.removeChild(overlayInput.firstChild);
-  //}
+  while(overlayInputList.firstChild) {
+    overlayInputList.removeChild(overlayInputList.firstChild);
+  }
+  // Hide the input overlay
+  document.getElementById("overlay-input-container").style.display = "none";
 
   // Clear log table
-  while(overlayTable.firstChild) {
-    overlayTable.removeChild(overlayTable.firstChild);
+  while(overlayLogTable.firstChild) {
+    overlayLogTable.removeChild(overlayLogTable.firstChild);
   }
-  overlayTable.innerHTML = "<h3 class='overlay'>Loading...</h3>"
+  // Hide log overlay
+  document.getElementById("overlay-log-container").style.display = "none";
+  overlayLogTable.innerHTML = "<h3 class='overlay'>Loading...</h3>"
 
 }
 
-function openOverlay(title) {
-  document.getElementById("overlay-title").innerHTML = title;
+function openOverlay() {
   document.getElementById("overlay").style.display = "block";
+}
+
+function openLogOverlay(title) {
+  document.getElementById("overlay-log-container").style.display = "block";
+  document.getElementById("overlay-title-logs").innerHTML = title;
+  overlayLogTable.innerHTML = "<h3 class='overlay'>Loading...</h3>"
+  openOverlay();
 }
 
 function closeOverlay() {
   document.getElementById("overlay").style.display = "none";
   resetOverlay();
-  overlayInput.style.display = "none";
-  overlayTable.style.display = "none";
-}
-
-function openLoginOverlay() {
-  // TODO
 }
 
 function loggedIn() {
@@ -350,9 +373,9 @@ function loggedIn() {
 function openTotemSettings(key) {
 
   // Confirm permission
-  if(false && !loggedIn()) {
-    // If fail, open login screen
-    openLoginOverlay()
+  if(!loggedIn()) {
+    // If fail, redirect to login screen
+    logout();
   }
 
   // Set title
@@ -371,8 +394,11 @@ function openTotemSettings(key) {
   b.onclick = function() { updateTotemConfig(key); }
   document.getElementById("overlay-input-submit-msg").innerHTML = "";
 
+  // Show the settings
+  document.getElementById("overlay-input-container").style.display = "block";
+
   // Open the overlay
-  openOverlay("");
+  openOverlay();
 }
 
 function buildInputRow(key, field, value) {
@@ -400,10 +426,8 @@ function updateTotemConfig(key) {
 
   // Update the totem object and return to backend
   if(key in totems) {
-
     totems[key].id = document.getElementById(key + "_id").value;
     totems[key].controllerConfig.displayURL = document.getElementById(key + "_displayURL").value;
-
   }
 
   var data = {
@@ -423,36 +447,36 @@ function updateTotemConfig(key) {
 
 function getDayLogs(collection, title) {
   socket.emit("request_day_logs", collection);
-  overlayTable.style.display = "block";
-  openOverlay(title);
+  overlayLogTable.style.display = "block";
+  openLogOverlay(title);
 }
 
 // Get logs for the script execution (warnings and errors)
 function getScriptLogs(collection, title) {
   // Open the overlay and attempt to get the logs
   socket.emit("request_script_logs", collection);
-  overlayTable.style.display = "block";
-  openOverlay(title);
+  overlayLogTable.style.display = "block";
+  openLogOverlay(title);
 }
 
 function getDayInteractionLogs(key, title) {
   // Sew together navigation and interaction
   socket.emit("request_day_interaction_logs", key);
-  overlayTable.style.display = "block";
-  openOverlay(title);
+  overlayLogTable.style.display = "block";
+  openLogOverlay(title);
 }
 
 function resetLogTable() {
 
-  while(overlayTable.firstChild) {
-    overlayTable.removeChild(overlayTable.firstChild);
+  while(overlayLogTable.firstChild) {
+    overlayLogTable.removeChild(overlayLogTable.firstChild);
   }
 
   var table = document.createElement("table");
   table.onclick = 'event.stopPropagation();event.preventDefault();';
   table.appendChild(createTableRow("Time", "Messages", "th"));
 
-  overlayTable.appendChild(table);
+  overlayLogTable.appendChild(table);
 
   return table;
 }
