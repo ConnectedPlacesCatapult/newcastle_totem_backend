@@ -87,6 +87,16 @@ def call_google_places(totem_location_lat,totem_location_lon, subcategory, jitte
         else:
             pass
 
+    ## Filter corporations
+    places_gmaps = filter(lambda d: 'Starbucks' not in d['name'], places_gmaps)
+    places_gmaps = filter(lambda d: 'Costa' not in d['name'], places_gmaps)
+    places_gmaps = filter(lambda d: 'Pret' not in d['name'], places_gmaps)
+    places_gmaps = filter(lambda d: 'Nero' not in d['name'], places_gmaps)
+    places_gmaps = filter(lambda d: 'KFC' not in d['name'], places_gmaps)
+    places_gmaps = filter(lambda d: 'Greggs' not in d['name'], places_gmaps)
+    places_gmaps = filter(lambda d: 'McDonald' not in d['name'], places_gmaps)
+    places_gmaps = filter(lambda d: 'Burger King' not in d['name'], places_gmaps)
+    
     return places_gmaps
 
 import googlemaps
@@ -678,8 +688,8 @@ for t_key in totems:
 
 
     ## Cropping the action msg
-    #action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
-    action_msg = random.choice(action_msg.split('_')[0:3]) + '_' + action_msg.split('_')[3]
+    action_msg = random.choice(action_msg.split('_')[0:2]) + '_' + action_msg.split('_')[2] + '_' + action_msg.split('_')[3]
+    #action_msg = random.choice(action_msg.split('_')[0:3]) + '_' + action_msg.split('_')[3]
     #print action_msg
 
     recommendation[0]['action_msg'] = action_msg
