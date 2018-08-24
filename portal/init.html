@@ -1,0 +1,39 @@
+<html>
+
+<!-- TODO put something nice in this page! -->
+<body style="background-color: #000; margin: 0; padding: 0;"></body>
+
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+<script>
+
+// Attempt to make a connection to a localHost server. If fail, notify!
+var endpoint = "http://localhost:3000";
+
+function initialiseTotem() {
+
+  $.post( endpoint, {init:true}, function(res) {
+    // Res should consist only of the display URL; immediately navigate there
+
+    window.location.href = res.displayURL;
+  })
+  .fail(function(err) {
+    console.log("Failed to connect to local server");
+    console.log(err);
+    // TODO try to notify mainframe that the server is down
+  })
+  .always(function() {
+    // Try again in 5 minutes
+    setTimeout(function(){ initialiseTotem() }, 300000)
+  });
+
+}
+
+initialiseTotem();
+
+</script>
+
+</html>
+
