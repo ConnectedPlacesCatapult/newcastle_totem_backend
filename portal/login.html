@@ -58,7 +58,9 @@
     document.getElementById("error").innerHTML = ""
 
     // Init socket to mainframe
-    const addr = "http://52.56.231.86:3001"
+    var splitURL = window.location.href.split(":");
+    
+    const addr = splitURL[0] + ":" + splitURL[1] + ":3001";
     const socket = io(addr);
 
     socket.io.on('connect_error', function(e) {

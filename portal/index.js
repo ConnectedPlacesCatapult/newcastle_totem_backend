@@ -1,6 +1,6 @@
 // HANDLES ALL CONNECTION TO MAINFRAME
 var socket;
-const addr = "http://52.56.231.86:3001"
+const addr = "http://35.176.15.249:3001"
 
 var totems = null;
 
