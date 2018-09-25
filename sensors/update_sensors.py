@@ -144,6 +144,7 @@ for t_key in totems:
 
     try:
         with open("sensors-totem-"+str(totem_id)+".json") as totem_data:
+            print totem_data
             totem_data = json.load(totem_data)
     except EnvironmentError:
         print "Error when opening sensors-totem-"+str(totem_id)+".json - building from scratch"

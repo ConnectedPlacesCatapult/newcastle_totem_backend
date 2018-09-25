@@ -29,7 +29,7 @@ var util = require('util');
 const logMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
 
 // Init local data
-const config = JSON.parse(fs.readFileSync('mainframe_config.json', 'utf8'));
+const config = JSON.parse(fs.readFileSync('/home/ubuntu/newcastle_totem_backend/node/mainframe_config.json', 'utf8'));
 var totems = JSON.parse(fs.readFileSync('../totem_details.json', 'utf8'));
 
 // Store status of the mainframe for quick lookup on dashboard
@@ -44,6 +44,11 @@ var sourceSensorsTimer = null;
 var updateILITimer = null;
 var sourceILITimer = null;
 var cleanILITimer = null;
+
+
+// Rudimentary sleep params - will not run updates between these hours
+var sleepStart = 2;
+var sleepEnd = 6;
 
 //// SENSORS ///////////////////////////////////////////////////////////////////
 
@@ -158,8 +163,19 @@ function sourceSensors(retry=0, log=null) {
   });
 }
 
-// Update sensors - should be called every 10 minutes
+// Update sensors - should be called every 15 minutes
 function updateSensors(retry=0, log=null) {
+
+  // Clear timeout in case it hasn't already
+  clearTimeout(updateSensorsTimer);
+
+  // Rudimentary approach for sleeping overnight
+  var h = new Date().getHours();
+  if(h > sleepStart && h < sleepEnd) {
+    // Reset timer
+    updateSensorsTimer = setTimeout(function() { updateSensors() }, getMillisecondsTilMinute(config.updateSensorsMinuteInterval));
+    return;
+  } 
 
   makeLogEntry("Updating sensors - attempt " + (retry+1))
 
@@ -474,6 +490,19 @@ function cleanILI(retry=0, log=null) {
 
 // Call data - runs every 15 minutes
 function updateILI(retry=0, log=null) {
+
+   // Clear timeout in case it hasn't already
+  clearTimeout(updateILITimer);
+
+  // Rudimentary approach for sleeping overnight
+  var h = new Date().getHours();
+  if(h > sleepStart && h < sleepEnd) {
+    // Reset timer
+    updateILITimer = setTimeout(function() { updateILI() }, getMillisecondsTilMinute(config.updateILIMinuteInterval));
+    return;
+  }
+
+
   makeLogEntry("Updating ILI content - attempt " + (retry+1))
 
   // Call the function

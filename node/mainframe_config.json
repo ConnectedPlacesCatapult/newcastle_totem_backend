@@ -5,7 +5,7 @@
   "sourceSensorsHour":8,
   "updateSensorsMinuteInterval":15,
   "sourceILIHour":8,
-  "updateILIMinuteInterval":15,
+  "updateILIMinuteInterval":59,
 
   "minHeartbeatSilence":15,
 
