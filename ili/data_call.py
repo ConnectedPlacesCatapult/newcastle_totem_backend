@@ -153,13 +153,13 @@ def call_google_places(totem_location_lat,totem_location_lon, subcategory, jitte
         places.extend(nearby_result_pub['results'])
 
     elif subcategory == 'cafe':
-      print "Google backoff: Adding cafes",
+        print "Google backoff: Adding cafes",
         sys.stdout.flush()
         nearby_result_cafe = gmaps.places_nearby(location=[totem_location_lat, totem_location_lon],radius = jitter,
                                            open_now=True, type='cafe')
         places.extend(nearby_result_cafe['results'])
     elif subcategory == 'restaurant':
-      print "Google backoff: Adding restaurants",
+        print "Google backoff: Adding restaurants",
         sys.stdout.flush()
         nearby_result_restaurant = gmaps.places_nearby(location=[totem_location_lat, totem_location_lon],radius = jitter,
                                            open_now=True, type='restaurant')
@@ -347,22 +347,22 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
             if rain_probability > 0.5:
                 #print "its raining"
 
-                ######## commenting out until google places API issues is fixed
-                # data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories,
-                #                      get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
+                ######## Calling google API
+                data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories,
+                                     get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
 
-                # if not data:
-                #     data = call_google_places(totem_lat, totem_lon, subcategories, 1.4 * 60 * jitter)
-                #     data.extend(get_closest(extended_categories,
-                #                places_all, 1.4 * 60 * jitter))
-                #  else:
-          # data.extend(get_closest(extended_categories,
-          #            places_all, 1.4 * 60 * jitter))
+                if not data:
+                    data = call_google_places(totem_lat, totem_lon, subcategories, 1.4 * 60 * jitter)
+                    data.extend(get_closest(extended_categories,
+                               places_all, 1.4 * 60 * jitter))
+                else:
+                    data.extend(get_closest(extended_categories,
+                    places_all, 1.4 * 60 * jitter))
 
-                data = []
+                # data = []
 
-                data.extend(get_closest(extended_categories,
-                           places_all, 1.4 * 60 * jitter))
+                # data.extend(get_closest(extended_categories,
+                #            places_all, 1.4 * 60 * jitter))
                 recommendation = random.sample(data[0:3],1)                         
                 ########
                    
@@ -383,22 +383,22 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
             elif rain_probability < 0.5 and temperature > 0.5:
                 #print "its hot!"
 
-                ######## commenting out until google places API issues is fixed
-                # data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories[0],
-                #      get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
+                ######## Calling google API
+                data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories[0],
+                     get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
 
-                # if not data:
-                #     data = call_google_places(totem_lat, totem_lon, subcategories[0], 1.4 * 60 * jitter)
+                if not data:
+                    data = call_google_places(totem_lat, totem_lon, subcategories[0], 1.4 * 60 * jitter)
 
-                #     data.extend(get_closest(extended_categories,
-                #                places_all, 1.4 * 60 * jitter))
-                #  else:
-          # data.extend(get_closest(extended_categories,
-          #            places_all, 1.4 * 60 * jitter))
-                data = []
+                    data.extend(get_closest(extended_categories,
+                               places_all, 1.4 * 60 * jitter))
+                else:
+                    data.extend(get_closest(extended_categories,
+                     places_all, 1.4 * 60 * jitter))
+                # data = []
 
-                data.extend(get_closest(extended_categories,
-                           places_all, 1.4 * 60 * jitter))
+                # data.extend(get_closest(extended_categories,
+                #            places_all, 1.4 * 60 * jitter))
                 recommendation = random.sample(data[0:3],1)                      
                 ########
 
@@ -421,21 +421,21 @@ def recommendation_poi(minutes, totem_lat, totem_lon, places_all):
             elif rain_probability < 0.5 and temperature < 0.5:
                 #print "its cold!"
 
-                ######## commenting out until google places API issues is fixed
-                # data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories[0],
-                #                      get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
+                ######## Calling google API
+                data = filter(lambda d: d['properties'][0]['subcategory'] in subcategories[0],
+                                     get_closest('food_drinks', places_all, 1.4 * 60 * jitter))
 
-                # if not data:
-                #     data = call_google_places(totem_lat, totem_lon, subcategories[0], 1.4 * 60 * jitter)
-                #     data.extend(get_closest(extended_categories,
-                #                places_all, 1.4 * 60 * jitter))
-                # else:
-                #     data.extend(get_closest(extended_categories,
-                #                places_all, 1.4 * 60 * jitter))
-                data = []
+                if not data:
+                    data = call_google_places(totem_lat, totem_lon, subcategories[0], 1.4 * 60 * jitter)
+                    data.extend(get_closest(extended_categories,
+                               places_all, 1.4 * 60 * jitter))
+                else:
+                    data.extend(get_closest(extended_categories,
+                               places_all, 1.4 * 60 * jitter))
+                # data = []
 
-                data.extend(get_closest(extended_categories,
-                           places_all, 1.4 * 60 * jitter))
+                # data.extend(get_closest(extended_categories,
+                #            places_all, 1.4 * 60 * jitter))
                 recommendation = random.sample(data[0:3],1)    
                 ########
 
