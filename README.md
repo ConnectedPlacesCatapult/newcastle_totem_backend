@@ -1,9 +1,6 @@
 # Tech Totem Software Infrastructure
 This repo holds all backend code for Newcastle Tech Totem softaware infrastructure. For details on the front end wordpress installation please visit https://github.com/FutureCitiesCatapult/newcastle_totem_wordpress
 
-## Table of Contents
-
-## Quick links & details
 The backend is hosted on an EC2 instance:
 ubuntu@ec2-35-176-15-249.eu-west-2.compute.amazonaws.com
 
