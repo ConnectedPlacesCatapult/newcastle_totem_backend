@@ -69,8 +69,8 @@ def record_audio():
 def upload(max_value):
     s3 = boto3.resource(
         's3',
-        aws_access_key_id='AKIAJG3WFE3ORCBQD7DA',
-        aws_secret_access_key='3Q3kbzNL0wi9U6oevzwztGh0sGjjLZhQASfwz8//',
+        aws_access_key_id='YOUR-AWS-ACCESS-ID',
+        aws_secret_access_key='YOUR-AWS-ACCESS-KEY',
         config=Config(signature_version='s3v4')
     )
 
