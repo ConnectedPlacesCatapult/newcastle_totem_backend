@@ -33,8 +33,8 @@ def main():
 			ACCESS_KEY_ID = 'AKIAINRS6Y72NCDYTV3Q'
 			s3 = boto3.resource(
 				's3',
-	  			aws_access_key_id='AKIAINRS6Y72NCDYTV3Q',
-	   			aws_secret_access_key='h4D7Y3uHhVQRHCGFSB54U9d2+gSr+vI+CPMlvJPH',
+	  			aws_access_key_id='YOUR-AWS-KEY-ID',
+	   			aws_secret_access_key='YOUR-AWS-SECRET',
 	   			config=Config(signature_version='s3v4')
 			)
 			for obj in s3.Bucket('southside.tech.totem').objects.all():
